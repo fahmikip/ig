@@ -79,6 +79,10 @@ a { color: var(--accent); text-decoration: none; }
   clip: rect(0 0 0 0); clip-path: inset(50%); overflow: hidden; white-space: nowrap;
 }
 
+/* The hidden attribute must always win over any display rule
+   (used by modals, views and the canvas empty overlay). */
+[hidden] { display: none !important; }
+
 .icon { width: 18px; height: 18px; flex: none; }
 .icon-sm { width: 15px; height: 15px; }
 
