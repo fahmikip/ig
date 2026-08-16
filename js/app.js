@@ -121,6 +121,14 @@
     bindViews();
     bindSamples();
     registerSW();
+
+    /* Re-render once web fonts finish loading so typography is accurate */
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () {
+        renderLanding();
+        Editor.render();
+      }).catch(function () { /* fonts blocked — design still works */ });
+    }
   }
 
   if (document.readyState === 'loading') {

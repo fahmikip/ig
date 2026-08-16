@@ -1,246 +1,315 @@
 /* ============================================================
    COVERLY — templates.js
-   Template engine data: 12 templates, font presets,
-   text position presets and a local "Smart Title Ideas" dictionary.
+   Font library, ready-to-use template collection, sticker/element
+   palette, position presets and the local title-ideas dictionary.
    ============================================================ */
 (function (global) {
   'use strict';
 
-  /* Font stacks used for canvas rendering + <select> options */
+  /* ---------------- fonts ---------------- */
   const FONTS = [
-    { id: 'Inter', name: 'Inter', stack: "'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif" },
-    { id: 'Poppins', name: 'Poppins', stack: "'Poppins', system-ui, sans-serif" },
-    { id: 'Montserrat', name: 'Montserrat', stack: "'Montserrat', system-ui, sans-serif" },
-    { id: 'Playfair Display', name: 'Playfair Display', stack: "'Playfair Display', Georgia, 'Times New Roman', serif" },
-    { id: 'Bebas Neue', name: 'Bebas Neue', stack: "'Bebas Neue', 'Arial Narrow', Impact, sans-serif" },
-    { id: 'DM Sans', name: 'DM Sans', stack: "'DM Sans', system-ui, sans-serif" },
-    { id: 'Space Grotesk', name: 'Space Grotesk', stack: "'Space Grotesk', system-ui, sans-serif" }
+    { name: 'Space Grotesk', stack: "'Space Grotesk',sans-serif", cat: 'Sans' },
+    { name: 'Inter', stack: "'Inter',sans-serif", cat: 'Sans' },
+    { name: 'Poppins', stack: "'Poppins',sans-serif", cat: 'Sans' },
+    { name: 'Montserrat', stack: "'Montserrat',sans-serif", cat: 'Sans' },
+    { name: 'Oswald', stack: "'Oswald',sans-serif", cat: 'Condensed' },
+    { name: 'Bebas Neue', stack: "'Bebas Neue',sans-serif", cat: 'Condensed' },
+    { name: 'Playfair Display', stack: "'Playfair Display',serif", cat: 'Serif' },
+    { name: 'DM Serif Display', stack: "'DM Serif Display',serif", cat: 'Serif' }
   ];
 
-  function fontStack(id) {
-    const f = FONTS.find(function (x) { return x.id === id; });
-    return f ? f.stack : "'Inter', system-ui, sans-serif";
+  function fontStack(name) {
+    const f = FONTS.find(function (x) { return x.name === name; });
+    return (f && f.stack) || FONTS[0].stack;
   }
 
-  /* Normalized text position presets (x = align-anchor fraction, y = block center) */
-  const POSITIONS = {
-    'top-left': { x: 0.08, y: 0.16, align: 'left' },
-    'top-center': { x: 0.5, y: 0.16, align: 'center' },
-    'top-right': { x: 0.92, y: 0.16, align: 'right' },
-    'center': { x: 0.5, y: 0.5, align: 'center' },
-    'bottom-left': { x: 0.08, y: 0.84, align: 'left' },
-    'bottom-center': { x: 0.5, y: 0.84, align: 'center' },
-    'bottom-right': { x: 0.92, y: 0.84, align: 'right' }
-  };
+  /* ---------------- categories ---------------- */
+  const CATEGORIES = [
+    { id: 'cinematic', name: 'Cinematic' },
+    { id: 'minimal', name: 'Minimal' },
+    { id: 'bold', name: 'Bold Quote' },
+    { id: 'lifestyle', name: 'Lifestyle' },
+    { id: 'product', name: 'Product' },
+    { id: 'promo', name: 'Promo' },
+    { id: 'typography', name: 'Typography' },
+    { id: 'special', name: 'Special' }
+  ];
 
-  function pos(key) {
-    return Object.assign({}, POSITIONS[key] || POSITIONS['center']);
-  }
-
-  /* ------------------------------------------------------------
-     Templates
-     ------------------------------------------------------------ */
+  /* ---------------- templates ---------------- */
   const TEMPLATES = [
+    /* ---------- CINEMATIC ---------- */
     {
-      id: 'cinematic-dark',
-      name: 'Cinematic Dark',
-      category: 'cinematic',
-      bg: '#0c0c0e',
-      title: Object.assign(pos('bottom-left'), {
-        text: 'The Road Home', font: 'Bebas Neue', size: 148, weight: 400,
-        letterSpacing: 6, lineHeight: 1.02, color: '#ffffff', opacity: 1, case: 'uppercase'
-      }),
-      subtitle: Object.assign(pos('bottom-left'), {
-        text: 'A quiet journey through the valley', font: 'Inter', size: 30, weight: 500,
-        letterSpacing: 4, lineHeight: 1.5, color: '#ffffff', opacity: 0.75, case: 'uppercase'
-      }),
-      overlay: { type: 'dark', opacity: 0.5, vignette: 0.45, blur: 0, tint: null, tintAlpha: 0 },
-      decor: { doodle: false, film: false, grain: false, accentLine: false, pill: false, pillText: '' }
+      id: 'cinematic-dark', name: 'Cinematic Dark', category: 'cinematic',
+      bg: '#0B0B0F', overlay: { type: 'dark', opacity: 0.4, vignette: 0.5, blur: 0, tint: null, tintAlpha: 0 },
+      decor: { accentLine: true },
+      title: { font: 'Space Grotesk', size: 118, weight: 700, letterSpacing: 0, lineHeight: 1.05, align: 'left', color: '#FFFFFF', opacity: 1, case: 'uppercase', x: 0.08, y: 0.16, shadow: { enabled: true, color: 'rgba(0,0,0,0.6)', blur: 34, offsetX: 0, offsetY: 6 } },
+      subtitle: { font: 'Inter', size: 28, weight: 500, letterSpacing: 2, lineHeight: 1.6, align: 'left', color: 'rgba(255,255,255,0.78)', opacity: 1, case: 'uppercase', x: 0.08, y: 0.3 },
+      sample: { title: 'SCENE 01', subtitle: 'SORE YANG PERLAHAN — DI UJUNG SENJA' }
     },
     {
-      id: 'film-frame',
-      name: 'Film Frame',
-      category: 'cinematic',
-      bg: '#050505',
-      title: Object.assign(pos('center'), {
-        text: 'Afterglow', font: 'Space Grotesk', size: 96, weight: 600,
-        letterSpacing: 14, lineHeight: 1.15, color: '#f4f4f1', opacity: 1, case: 'uppercase'
-      }),
-      subtitle: Object.assign(pos('center'), {
-        text: 'GOLDEN HOUR · 2026', font: 'DM Sans', size: 24, weight: 500,
-        letterSpacing: 6, lineHeight: 1.5, color: '#ffffff', opacity: 0.7, case: 'uppercase'
-      }),
-      overlay: { type: 'dark', opacity: 0.32, vignette: 0.6, blur: 0, tint: null, tintAlpha: 0 },
-      decor: { doodle: false, film: true, grain: true, accentLine: false, pill: false, pillText: '' }
+      id: 'golden-hour', name: 'Golden Hour', category: 'cinematic',
+      bg: '#120D08', overlay: { type: 'dark', opacity: 0.25, vignette: 0.42, blur: 0, tint: 'sepia', tintAlpha: 0.5 },
+      decor: { accentLine: true },
+      title: { font: 'DM Serif Display', size: 112, weight: 400, letterSpacing: 0, lineHeight: 1.1, align: 'left', color: '#FFE9C7', opacity: 1, case: 'none', x: 0.08, y: 0.15, shadow: { enabled: true, color: 'rgba(0,0,0,0.5)', blur: 28, offsetX: 0, offsetY: 4 } },
+      subtitle: { font: 'Inter', size: 26, weight: 500, letterSpacing: 4, lineHeight: 1.6, align: 'left', color: 'rgba(255,233,199,0.8)', opacity: 1, case: 'uppercase', x: 0.08, y: 0.3 },
+      sample: { title: 'Golden Hour', subtitle: 'THE LAST LIGHT BEFORE NIGHT' }
     },
     {
-      id: 'minimal-white',
-      name: 'Minimal White',
-      category: 'minimal',
-      bg: '#f4f4f0',
-      title: Object.assign(pos('top-left'), {
-        text: 'Less, but better', font: 'Space Grotesk', size: 72, weight: 600,
-        letterSpacing: -1, lineHeight: 1.12, color: '#111111', opacity: 1, case: 'none'
-      }),
-      subtitle: Object.assign(pos('bottom-left'), {
-        text: 'A minimal study in form', font: 'Inter', size: 24, weight: 400,
-        letterSpacing: 1, lineHeight: 1.6, color: '#555555', opacity: 1, case: 'none'
-      }),
-      overlay: { type: 'light', opacity: 0.35, vignette: 0, blur: 0, tint: null, tintAlpha: 0 },
-      decor: { doodle: false, film: false, grain: false, accentLine: false, pill: false, pillText: '' }
+      id: 'street-night', name: 'Street Night', category: 'cinematic',
+      bg: '#08070B', overlay: { type: 'dark', opacity: 0.45, vignette: 0.6, blur: 0, tint: null, tintAlpha: 0 },
+      decor: {},
+      title: { font: 'Oswald', size: 120, weight: 600, letterSpacing: 2, lineHeight: 1.05, align: 'left', color: '#F2EDE4', opacity: 1, case: 'uppercase', x: 0.08, y: 0.15, shadow: { enabled: true, color: 'rgba(0,0,0,0.7)', blur: 26, offsetX: 0, offsetY: 5 } },
+      subtitle: { font: 'Space Grotesk', size: 26, weight: 500, letterSpacing: 5, lineHeight: 1.6, align: 'left', color: '#FF5A36', opacity: 1, case: 'uppercase', x: 0.08, y: 0.29 },
+      sample: { title: 'CITY AFTER DARK', subtitle: 'NEON RAIN · LATE NIGHT DRIVE' }
     },
     {
-      id: 'editorial',
-      name: 'Editorial',
-      category: 'editorial',
-      bg: '#101012',
-      title: Object.assign(pos('top-left'), {
-        text: 'The Quiet Hours', font: 'Playfair Display', size: 88, weight: 600,
-        letterSpacing: 0, lineHeight: 1.05, color: '#f7f5f0', opacity: 1, case: 'none'
-      }),
-      subtitle: Object.assign(pos('bottom-right'), {
-        text: 'STORIES FROM THE MARGIN — ISSUE 04', font: 'Montserrat', size: 24, weight: 600,
-        letterSpacing: 4, lineHeight: 1.6, color: '#f7f5f0', opacity: 0.6, case: 'uppercase'
-      }),
-      overlay: { type: 'dark', opacity: 0.4, vignette: 0.3, blur: 0, tint: null, tintAlpha: 0 },
-      decor: { doodle: false, film: false, grain: false, accentLine: true, pill: false, pillText: '' }
+      id: 'moody-calm', name: 'Moody Calm', category: 'cinematic',
+      bg: '#0F1210', overlay: { type: 'light', opacity: 0.12, vignette: 0.55, blur: 0, tint: null, tintAlpha: 0 },
+      decor: {},
+      title: { font: 'Inter', size: 96, weight: 300, letterSpacing: 0, lineHeight: 1.2, align: 'left', color: '#F4F4F2', opacity: 1, case: 'none', x: 0.09, y: 0.16 },
+      subtitle: { font: 'Inter', size: 24, weight: 400, letterSpacing: 3, lineHeight: 1.7, align: 'left', color: 'rgba(244,244,242,0.65)', opacity: 1, case: 'uppercase', x: 0.09, y: 0.31 },
+      sample: { title: 'Breathe in, quietly', subtitle: 'A NOTE ON SLOW LIVING' }
+    },
+
+    /* ---------- MINIMAL ---------- */
+    {
+      id: 'minimal-ivory', name: 'Minimal Ivory', category: 'minimal',
+      bg: '#EDEBE4', overlay: { type: 'none', opacity: 0, vignette: 0, blur: 0, tint: null, tintAlpha: 0 },
+      decor: { accentLine: true },
+      title: { font: 'Space Grotesk', size: 104, weight: 600, letterSpacing: -2, lineHeight: 1.05, align: 'left', color: '#111111', opacity: 1, case: 'none', x: 0.08, y: 0.16 },
+      subtitle: { font: 'Inter', size: 26, weight: 500, letterSpacing: 3, lineHeight: 1.6, align: 'left', color: '#6B6B63', opacity: 1, case: 'uppercase', x: 0.08, y: 0.3 },
+      sample: { title: 'Less, but better', subtitle: 'VOL. 02 — THE MINIMAL EDIT' }
     },
     {
-      id: 'street-night',
-      name: 'Street Night',
-      category: 'street',
-      bg: '#0a0a0c',
-      title: Object.assign(pos('bottom-left'), {
-        text: 'City After Dark', font: 'Bebas Neue', size: 168, weight: 400,
-        letterSpacing: 4, lineHeight: 1, color: '#ff4a2e', opacity: 1, case: 'uppercase'
-      }),
-      subtitle: Object.assign(pos('bottom-left'), {
-        text: 'NEON RAIN · 2:00 AM', font: 'Montserrat', size: 28, weight: 600,
-        letterSpacing: 6, lineHeight: 1.6, color: '#ffffff', opacity: 0.85, case: 'uppercase'
-      }),
-      overlay: { type: 'dark', opacity: 0.55, vignette: 0.65, blur: 0, tint: null, tintAlpha: 0 },
-      decor: { doodle: false, film: false, grain: true, accentLine: false, pill: false, pillText: '' }
+      id: 'clean-white', name: 'Clean White', category: 'minimal',
+      bg: '#FAFAF8', overlay: { type: 'light', opacity: 0.1, vignette: 0.12, blur: 0, tint: null, tintAlpha: 0 },
+      decor: { pill: true, pillText: 'EST. 2026', accentLine: false },
+      title: { font: 'DM Serif Display', size: 110, weight: 400, letterSpacing: 0, lineHeight: 1.1, align: 'left', color: '#111111', opacity: 1, case: 'none', x: 0.08, y: 0.15 },
+      subtitle: { font: 'Inter', size: 26, weight: 400, letterSpacing: 4, lineHeight: 1.6, align: 'left', color: '#8A8A82', opacity: 1, case: 'uppercase', x: 0.08, y: 0.3 },
+      sample: { title: 'Today, simply', subtitle: 'ONE GOOD DAY AT A TIME' }
     },
     {
-      id: 'travel-journal',
-      name: 'Travel Journal',
-      category: 'travel',
-      bg: '#0e0e10',
-      title: Object.assign(pos('center'), {
-        text: 'Escape the ordinary', font: 'Playfair Display', size: 84, weight: 500,
-        letterSpacing: 0, lineHeight: 1.15, color: '#ffffff', opacity: 1, case: 'none'
-      }),
-      subtitle: Object.assign(pos('center'), {
-        text: 'WANDER · EXPLORE · RETURN', font: 'Inter', size: 24, weight: 600,
-        letterSpacing: 8, lineHeight: 1.6, color: '#ffffff', opacity: 0.75, case: 'uppercase'
-      }),
-      overlay: { type: 'dark', opacity: 0.3, vignette: 0.25, blur: 0, tint: null, tintAlpha: 0 },
-      decor: { doodle: false, film: false, grain: false, accentLine: false, pill: true, pillText: 'JOURNEY 001' }
+      id: 'editorial', name: 'Editorial', category: 'minimal',
+      bg: '#0F0F12', overlay: { type: 'none', opacity: 0, vignette: 0.3, blur: 0, tint: null, tintAlpha: 0 },
+      decor: { accentLine: true },
+      title: { font: 'Playfair Display', size: 100, weight: 500, letterSpacing: 0, lineHeight: 1.15, align: 'left', color: '#F5F1E8', opacity: 1, case: 'none', x: 0.09, y: 0.15 },
+      subtitle: { font: 'Inter', size: 24, weight: 400, letterSpacing: 5, lineHeight: 1.7, align: 'left', color: 'rgba(245,241,232,0.6)', opacity: 1, case: 'uppercase', x: 0.09, y: 0.3 },
+      sample: { title: 'The Quiet Issue', subtitle: 'ISSUE NO. 04 — WINTER' }
     },
     {
-      id: 'analog-film',
-      name: 'Analog Film',
-      category: 'analog',
-      bg: '#141210',
-      title: Object.assign(pos('top-left'), {
-        text: 'Summer memories', font: 'Playfair Display', size: 76, weight: 500,
-        letterSpacing: 0, lineHeight: 1.1, color: '#f1e8d8', opacity: 1, case: 'none'
-      }),
-      subtitle: Object.assign(pos('top-left'), {
-        text: '35mm · found on the floor', font: 'DM Sans', size: 24, weight: 400,
-        letterSpacing: 2, lineHeight: 1.6, color: '#d8cbb6', opacity: 0.85, case: 'none'
-      }),
-      overlay: { type: 'dark', opacity: 0.2, vignette: 0.7, blur: 0, tint: '#c9a86a', tintAlpha: 0.18 },
-      decor: { doodle: false, film: true, grain: true, accentLine: false, pill: false, pillText: '' }
+      id: 'soft-grey', name: 'Soft Grey', category: 'minimal',
+      bg: '#D9DAD6', overlay: { type: 'none', opacity: 0, vignette: 0.1, blur: 0, tint: null, tintAlpha: 0 },
+      decor: {},
+      title: { font: 'Inter', size: 88, weight: 400, letterSpacing: 1, lineHeight: 1.2, align: 'center', color: '#161616', opacity: 1, case: 'none', x: 0.5, y: 0.5 },
+      subtitle: { font: 'Inter', size: 24, weight: 500, letterSpacing: 5, lineHeight: 1.6, align: 'center', color: '#3C3C38', opacity: 1, case: 'uppercase', x: 0.5, y: 0.62 },
+      sample: { title: 'Keep it simple', subtitle: '— LESS NOISE, MORE SIGNAL —' }
+    },
+
+    /* ---------- BOLD QUOTE ---------- */
+    {
+      id: 'bold-quote', name: 'Bold Quote', category: 'bold',
+      bg: '#101014', overlay: { type: 'dark', opacity: 0.5, vignette: 0.5, blur: 0, tint: null, tintAlpha: 0 },
+      decor: { accentLine: true },
+      title: { font: 'Bebas Neue', size: 170, weight: 400, letterSpacing: 1, lineHeight: 0.95, align: 'left', color: '#FFFFFF', opacity: 1, case: 'none', x: 0.08, y: 0.35, shadow: { enabled: true, color: 'rgba(0,0,0,0.55)', blur: 24, offsetX: 0, offsetY: 4 } },
+      subtitle: { font: 'Inter', size: 26, weight: 500, letterSpacing: 5, lineHeight: 1.6, align: 'left', color: '#FF5A36', opacity: 1, case: 'uppercase', x: 0.08, y: 0.63 },
+      sample: { title: 'Make it count', subtitle: 'THIS IS YOUR MOMENT' }
     },
     {
-      id: 'bold-typography',
-      name: 'Bold Typography',
-      category: 'quote',
-      bg: '#0d0d0f',
-      title: Object.assign(pos('center'), {
-        text: 'Make it loud', font: 'Bebas Neue', size: 220, weight: 400,
-        letterSpacing: 6, lineHeight: 0.95, color: '#ffffff', opacity: 1, case: 'uppercase'
-      }),
-      subtitle: Object.assign(pos('center'), {
-        text: 'IF YOU ARE GOING TO SAY IT, SAY IT', font: 'Montserrat', size: 24, weight: 500,
-        letterSpacing: 6, lineHeight: 1.6, color: '#a9a9a4', opacity: 1, case: 'uppercase'
-      }),
-      overlay: { type: 'dark', opacity: 0.42, vignette: 0.35, blur: 0, tint: null, tintAlpha: 0 },
-      decor: { doodle: false, film: false, grain: false, accentLine: true, pill: false, pillText: '' }
+      id: 'quote-lines', name: 'Quote Lines', category: 'bold',
+      bg: '#0C0C0E', overlay: { type: 'dark', opacity: 0.45, vignette: 0.4, blur: 0, tint: null, tintAlpha: 0 },
+      decor: { accentLine: true },
+      title: { font: 'Playfair Display', size: 96, weight: 500, letterSpacing: 0, lineHeight: 1.25, align: 'left', color: '#F7F4ED', opacity: 1, case: 'none', x: 0.08, y: 0.22 },
+      subtitle: { font: 'Space Grotesk', size: 26, weight: 500, letterSpacing: 4, lineHeight: 1.6, align: 'left', color: 'rgba(247,244,237,0.6)', opacity: 1, case: 'uppercase', x: 0.08, y: 0.52 },
+      sample: { title: '“Growth is never by mere chance.”', subtitle: '— DAILY REMINDER —' }
     },
     {
-      id: 'clean-story',
-      name: 'Clean Story',
-      category: 'minimal',
-      bg: '#e9e9e4',
-      title: Object.assign(pos('top-left'), {
-        text: 'A quiet morning', font: 'Playfair Display', size: 64, weight: 500,
-        letterSpacing: 0, lineHeight: 1.2, color: '#151515', opacity: 1, case: 'none'
-      }),
-      subtitle: Object.assign(pos('bottom-left'), {
-        text: 'STORIES TOLD IN GOOD LIGHT', font: 'Inter', size: 22, weight: 600,
-        letterSpacing: 5, lineHeight: 1.6, color: '#3f3f3a', opacity: 0.9, case: 'uppercase'
-      }),
-      overlay: { type: 'light', opacity: 0.3, vignette: 0, blur: 0, tint: null, tintAlpha: 0 },
-      decor: { doodle: false, film: false, grain: false, accentLine: false, pill: false, pillText: '' }
+      id: 'massive-type', name: 'Massive Type', category: 'bold',
+      bg: '#F0F0EC', overlay: { type: 'none', opacity: 0, vignette: 0, blur: 0, tint: null, tintAlpha: 0 },
+      decor: {},
+      title: { font: 'Bebas Neue', size: 200, weight: 400, letterSpacing: 0, lineHeight: 0.9, align: 'center', color: '#111111', opacity: 1, case: 'none', x: 0.5, y: 0.48 },
+      subtitle: { font: 'Inter', size: 28, weight: 600, letterSpacing: 8, lineHeight: 1.6, align: 'center', color: '#FF5A36', opacity: 1, case: 'uppercase', x: 0.5, y: 0.68 },
+      sample: { title: 'NOW', subtitle: 'THIS MOMENT IS YOURS' }
     },
     {
-      id: 'moody',
-      name: 'Moody',
-      category: 'cinematic',
-      bg: '#08080a',
-      title: Object.assign(pos('center'), {
-        text: 'muted', font: 'Space Grotesk', size: 60, weight: 500,
-        letterSpacing: 10, lineHeight: 1.2, color: '#f0f0ec', opacity: 0.9, case: 'lowercase'
-      }),
-      subtitle: Object.assign(pos('center'), {
-        text: 'SOME LIGHT ONLY MAKES SENSE IN THE DARK', font: 'Inter', size: 22, weight: 500,
-        letterSpacing: 6, lineHeight: 1.8, color: '#8f8f8a', opacity: 0.9, case: 'uppercase'
-      }),
-      overlay: { type: 'dark', opacity: 0.6, vignette: 0.8, blur: 6, tint: '#1a2433', tintAlpha: 0.25 },
-      decor: { doodle: false, film: false, grain: true, accentLine: false, pill: false, pillText: '' }
+      id: 'blackout', name: 'Blackout', category: 'bold',
+      bg: '#000000', overlay: { type: 'none', opacity: 0, vignette: 0.35, blur: 0, tint: null, tintAlpha: 0 },
+      decor: {},
+      title: { font: 'Oswald', size: 124, weight: 600, letterSpacing: 3, lineHeight: 1, align: 'center', color: '#FFFFFF', opacity: 1, case: 'uppercase', x: 0.5, y: 0.5, shadow: { enabled: true, color: 'rgba(255,255,255,0.25)', blur: 40, offsetX: 0, offsetY: 0 } },
+      subtitle: { font: 'Space Grotesk', size: 28, weight: 500, letterSpacing: 6, lineHeight: 1.6, align: 'center', color: '#FF5A36', opacity: 1, case: 'uppercase', x: 0.5, y: 0.65 },
+      sample: { title: 'NO EXCUSES', subtitle: 'SHOW UP. DO THE WORK.' }
+    },
+
+    /* ---------- LIFESTYLE ---------- */
+    {
+      id: 'travel', name: 'Wanderlust', category: 'lifestyle',
+      bg: '#0E1212', overlay: { type: 'dark', opacity: 0.35, vignette: 0.45, blur: 0, tint: null, tintAlpha: 0 },
+      decor: { pill: true, pillText: 'TRAVEL' },
+      title: { font: 'Poppins', size: 96, weight: 700, letterSpacing: -1, lineHeight: 1.1, align: 'left', color: '#FFFFFF', opacity: 1, case: 'none', x: 0.08, y: 0.2, shadow: { enabled: true, color: 'rgba(0,0,0,0.5)', blur: 24, offsetX: 0, offsetY: 4 } },
+      subtitle: { font: 'Inter', size: 26, weight: 400, letterSpacing: 2, lineHeight: 1.7, align: 'left', color: 'rgba(255,255,255,0.8)', opacity: 1, case: 'none', x: 0.08, y: 0.36 },
+      sample: { title: 'Sepanjang jalan ini', subtitle: 'menyusuri pantai, hutan, dan senja' }
     },
     {
-      id: 'doodle',
-      name: 'Doodle',
-      category: 'doodle',
-      bg: '#f2f1ec',
-      title: Object.assign(pos('top-left'), {
-        text: 'Good things take time', font: 'DM Sans', size: 72, weight: 700,
-        letterSpacing: -1, lineHeight: 1.15, color: '#161616', opacity: 1, case: 'none'
-      }),
-      subtitle: Object.assign(pos('bottom-left'), {
-        text: 'small steps, every day', font: 'DM Sans', size: 28, weight: 500,
-        letterSpacing: 0, lineHeight: 1.5, color: '#6b6b66', opacity: 1, case: 'none'
-      }),
-      overlay: { type: 'light', opacity: 0.28, vignette: 0, blur: 0, tint: null, tintAlpha: 0 },
-      decor: { doodle: true, film: false, grain: false, accentLine: false, pill: false, pillText: '' }
+      id: 'sunday', name: 'Sunday Feeling', category: 'lifestyle',
+      bg: '#141210', overlay: { type: 'dark', opacity: 0.3, vignette: 0.4, blur: 0, tint: 'sepia', tintAlpha: 0.25 },
+      decor: {},
+      title: { font: 'DM Serif Display', size: 100, weight: 400, letterSpacing: 0, lineHeight: 1.1, align: 'left', color: '#F7EFE3', opacity: 1, case: 'none', x: 0.08, y: 0.16 },
+      subtitle: { font: 'Inter', size: 26, weight: 400, letterSpacing: 3, lineHeight: 1.7, align: 'left', color: 'rgba(247,239,227,0.7)', opacity: 1, case: 'uppercase', x: 0.08, y: 0.3 },
+      sample: { title: 'Sunday, slowly', subtitle: 'SLOW MORNINGS & WARM COFFEE' }
     },
     {
-      id: 'vintage',
-      name: 'Vintage',
-      category: 'analog',
-      bg: '#181410',
-      title: Object.assign(pos('top-right'), {
-        text: 'Golden days', font: 'Playfair Display', size: 84, weight: 500,
-        letterSpacing: 0, lineHeight: 1.1, color: '#f3e6cd', opacity: 1, case: 'none'
-      }),
-      subtitle: Object.assign(pos('top-right'), {
-        text: 'est. 1998', font: 'Montserrat', size: 24, weight: 500,
-        letterSpacing: 6, lineHeight: 1.6, color: '#cbb279', opacity: 0.9, case: 'uppercase'
-      }),
-      overlay: { type: 'dark', opacity: 0.25, vignette: 0.75, blur: 0, tint: '#d8a86b', tintAlpha: 0.22 },
-      decor: { doodle: false, film: true, grain: true, accentLine: false, pill: false, pillText: '' }
+      id: 'food', name: 'Food Diary', category: 'lifestyle',
+      bg: '#0C0E0D', overlay: { type: 'dark', opacity: 0.4, vignette: 0.5, blur: 0, tint: 'warm', tintAlpha: 0.35 },
+      decor: { pill: true, pillText: 'FOOD DIARY' },
+      title: { font: 'Poppins', size: 104, weight: 700, letterSpacing: -1, lineHeight: 1.05, align: 'left', color: '#FFF7EC', opacity: 1, case: 'none', x: 0.08, y: 0.16, shadow: { enabled: true, color: 'rgba(0,0,0,0.5)', blur: 26, offsetX: 0, offsetY: 5 } },
+      subtitle: { font: 'Inter', size: 27, weight: 500, letterSpacing: 2, lineHeight: 1.6, align: 'left', color: 'rgba(255,247,236,0.8)', opacity: 1, case: 'none', x: 0.08, y: 0.3 },
+      sample: { title: 'Rasa Nusantara', subtitle: 'manis, pedas, dan cerita di meja makan' }
+    },
+    {
+      id: 'homegrown', name: 'Homegrown', category: 'lifestyle',
+      bg: '#F2EFE7', overlay: { type: 'none', opacity: 0, vignette: 0, blur: 0, tint: null, tintAlpha: 0 },
+      decor: { accentLine: true },
+      title: { font: 'Playfair Display', size: 96, weight: 500, letterSpacing: 0, lineHeight: 1.15, align: 'left', color: '#1C1C18', opacity: 1, case: 'none', x: 0.08, y: 0.16 },
+      subtitle: { font: 'Inter', size: 24, weight: 400, letterSpacing: 3, lineHeight: 1.7, align: 'left', color: '#7A766B', opacity: 1, case: 'uppercase', x: 0.08, y: 0.31 },
+      sample: { title: 'Homegrown', subtitle: 'GROWN SLOWLY, WITH LOVE' }
+    },
+
+    /* ---------- PRODUCT ---------- */
+    {
+      id: 'product', name: 'Product Shot', category: 'product',
+      bg: '#0F0F12', overlay: { type: 'dark', opacity: 0.35, vignette: 0.45, blur: 0, tint: null, tintAlpha: 0 },
+      decor: { pill: true, pillText: 'NEW IN' },
+      title: { font: 'Space Grotesk', size: 104, weight: 700, letterSpacing: -1, lineHeight: 1.05, align: 'center', color: '#FFFFFF', opacity: 1, case: 'none', x: 0.5, y: 0.22, shadow: { enabled: true, color: 'rgba(0,0,0,0.5)', blur: 28, offsetX: 0, offsetY: 5 } },
+      subtitle: { font: 'Inter', size: 26, weight: 500, letterSpacing: 3, lineHeight: 1.6, align: 'center', color: 'rgba(255,255,255,0.75)', opacity: 1, case: 'uppercase', x: 0.5, y: 0.36 },
+      sample: { title: 'The Everyday Bag', subtitle: 'CRAFTED TO LAST A DECADE' }
+    },
+    {
+      id: 'product-min', name: 'Product Minimal', category: 'product',
+      bg: '#EFEDE7', overlay: { type: 'none', opacity: 0, vignette: 0.12, blur: 0, tint: null, tintAlpha: 0 },
+      decor: {},
+      title: { font: 'DM Serif Display', size: 84, weight: 400, letterSpacing: 0, lineHeight: 1.2, align: 'left', color: '#191919', opacity: 1, case: 'none', x: 0.08, y: 0.2 },
+      subtitle: { font: 'Inter', size: 24, weight: 500, letterSpacing: 4, lineHeight: 1.6, align: 'left', color: '#6E6E66', opacity: 1, case: 'uppercase', x: 0.08, y: 0.34 },
+      sample: { title: 'Aroma N°1', subtitle: 'ESPRESSO · CEDAR · SALT' }
+    },
+
+    /* ---------- PROMO ---------- */
+    {
+      id: 'sale', name: 'Big Sale', category: 'promo',
+      bg: '#0C0C0E', overlay: { type: 'dark', opacity: 0.5, vignette: 0.5, blur: 0, tint: null, tintAlpha: 0 },
+      decor: { pill: true, pillText: 'LIMITED TIME' },
+      title: { font: 'Bebas Neue', size: 240, weight: 400, letterSpacing: 2, lineHeight: 0.9, align: 'center', color: '#FF5A36', opacity: 1, case: 'none', x: 0.5, y: 0.42, shadow: { enabled: true, color: 'rgba(0,0,0,0.5)', blur: 30, offsetX: 0, offsetY: 6 } },
+      subtitle: { font: 'Inter', size: 30, weight: 600, letterSpacing: 6, lineHeight: 1.6, align: 'center', color: '#FFFFFF', opacity: 1, case: 'uppercase', x: 0.5, y: 0.6 },
+      sample: { title: 'SALE', subtitle: 'UP TO 50% OFF · THIS WEEK ONLY' }
+    },
+    {
+      id: 'launch', name: 'Launch Day', category: 'promo',
+      bg: '#0D0E12', overlay: { type: 'dark', opacity: 0.45, vignette: 0.5, blur: 0, tint: null, tintAlpha: 0 },
+      decor: { pill: true, pillText: 'DROP 01' },
+      title: { font: 'Space Grotesk', size: 108, weight: 700, letterSpacing: 0, lineHeight: 1.05, align: 'left', color: '#FFFFFF', opacity: 1, case: 'uppercase', x: 0.08, y: 0.18, shadow: { enabled: true, color: 'rgba(0,0,0,0.55)', blur: 26, offsetX: 0, offsetY: 5 } },
+      subtitle: { font: 'Inter', size: 27, weight: 500, letterSpacing: 4, lineHeight: 1.6, align: 'left', color: '#FF5A36', opacity: 1, case: 'uppercase', x: 0.08, y: 0.32 },
+      sample: { title: 'Something New', subtitle: 'LAUNCHING FRIDAY 09:00' }
+    },
+    {
+      id: 'story-highlight', name: 'Story Highlight', category: 'promo',
+      bg: '#0F0F12', overlay: { type: 'dark', opacity: 0.4, vignette: 0.4, blur: 0, tint: null, tintAlpha: 0 },
+      decor: { accentLine: false },
+      title: { font: 'Poppins', size: 88, weight: 600, letterSpacing: 0, lineHeight: 1.15, align: 'center', color: '#FFFFFF', opacity: 1, case: 'none', x: 0.5, y: 0.34 },
+      subtitle: { font: 'Inter', size: 24, weight: 400, letterSpacing: 4, lineHeight: 1.7, align: 'center', color: 'rgba(255,255,255,0.7)', opacity: 1, case: 'uppercase', x: 0.5, y: 0.5 },
+      sample: { title: 'Tips & Tricks', subtitle: 'TAP TO EXPLORE' }
+    },
+    {
+      id: 'newsletter', name: 'Join Now', category: 'promo',
+      bg: '#101014', overlay: { type: 'dark', opacity: 0.4, vignette: 0.45, blur: 0, tint: null, tintAlpha: 0 },
+      decor: { pill: true, pillText: 'FREE GUIDE' },
+      title: { font: 'DM Serif Display', size: 92, weight: 400, letterSpacing: 0, lineHeight: 1.15, align: 'left', color: '#F7F4ED', opacity: 1, case: 'none', x: 0.08, y: 0.18 },
+      subtitle: { font: 'Inter', size: 26, weight: 500, letterSpacing: 3, lineHeight: 1.6, align: 'left', color: '#FF5A36', opacity: 1, case: 'uppercase', x: 0.08, y: 0.32 },
+      sample: { title: 'Start growing', subtitle: 'GET THE FREE 30-DAY GUIDE' }
+    },
+
+    /* ---------- TYPOGRAPHY ---------- */
+    {
+      id: 'typography', name: 'Big Type', category: 'typography',
+      bg: '#0C0C0E', overlay: { type: 'none', opacity: 0, vignette: 0.2, blur: 0, tint: null, tintAlpha: 0 },
+      decor: { accentLine: true },
+      title: { font: 'Bebas Neue', size: 220, weight: 400, letterSpacing: 1, lineHeight: 0.88, align: 'center', color: '#FFFFFF', opacity: 1, case: 'none', x: 0.5, y: 0.45 },
+      subtitle: { font: 'Inter', size: 26, weight: 500, letterSpacing: 8, lineHeight: 1.6, align: 'center', color: 'rgba(255,255,255,0.55)', opacity: 1, case: 'uppercase', x: 0.5, y: 0.6 },
+      sample: { title: 'TYPE', subtitle: 'SPEAKS LOUDER' }
+    },
+    {
+      id: 'serif-poem', name: 'Serif Poem', category: 'typography',
+      bg: '#F4F1EA', overlay: { type: 'none', opacity: 0, vignette: 0, blur: 0, tint: null, tintAlpha: 0 },
+      decor: {},
+      title: { font: 'Playfair Display', size: 92, weight: 500, letterSpacing: 0, lineHeight: 1.3, align: 'left', color: '#1D1B17', opacity: 1, case: 'none', x: 0.1, y: 0.18 },
+      subtitle: { font: 'Inter', size: 24, weight: 400, letterSpacing: 4, lineHeight: 1.8, align: 'left', color: '#8C877C', opacity: 1, case: 'uppercase', x: 0.1, y: 0.45 },
+      sample: { title: 'Rumah adalah tempat pulang', subtitle: 'SEBUAH CATATAN KECIL' }
+    },
+
+    /* ---------- SPECIAL ---------- */
+    {
+      id: 'fashion', name: 'Fashion', category: 'special',
+      bg: '#0A0A0C', overlay: { type: 'dark', opacity: 0.4, vignette: 0.5, blur: 0, tint: null, tintAlpha: 0 },
+      decor: {},
+      title: { font: 'Playfair Display', size: 100, weight: 500, lineHeight: 1.1, letterSpacing: 0, align: 'left', color: '#F5F1E8', opacity: 1, case: 'none', x: 0.08, y: 0.16, shadow: { enabled: true, color: 'rgba(0,0,0,0.5)', blur: 26, offsetX: 0, offsetY: 4 } },
+      subtitle: { font: 'Inter', size: 26, weight: 400, letterSpacing: 6, lineHeight: 1.6, align: 'left', color: '#FF5A36', opacity: 1, case: 'uppercase', x: 0.08, y: 0.3 },
+      sample: { title: 'Autumn in Paris', subtitle: 'COLLECTION AW 26' }
+    },
+    {
+      id: 'music', name: 'On Repeat', category: 'special',
+      bg: '#0D0C10', overlay: { type: 'dark', opacity: 0.45, vignette: 0.5, blur: 0, tint: null, tintAlpha: 0 },
+      decor: { pill: true, pillText: 'ON REPEAT' },
+      title: { font: 'Oswald', size: 118, weight: 600, letterSpacing: 2, lineHeight: 1.05, align: 'left', color: '#FFFFFF', opacity: 1, case: 'uppercase', x: 0.08, y: 0.18, shadow: { enabled: true, color: 'rgba(0,0,0,0.6)', blur: 28, offsetX: 0, offsetY: 5 } },
+      subtitle: { font: 'Inter', size: 27, weight: 500, letterSpacing: 3, lineHeight: 1.6, align: 'left', color: 'rgba(255,255,255,0.75)', opacity: 1, case: 'none', x: 0.08, y: 0.32 },
+      sample: { title: 'Late Night Mix', subtitle: 'VOL. 7 — lo-fi, jazz & rain' }
+    },
+    {
+      id: 'fitness', name: 'Train Hard', category: 'special',
+      bg: '#0B0B0D', overlay: { type: 'dark', opacity: 0.5, vignette: 0.55, blur: 0, tint: null, tintAlpha: 0 },
+      decor: {},
+      title: { font: 'Oswald', size: 150, weight: 700, letterSpacing: 4, lineHeight: 0.95, align: 'left', color: '#FFFFFF', opacity: 1, case: 'uppercase', x: 0.08, y: 0.28, shadow: { enabled: true, color: 'rgba(0,0,0,0.6)', blur: 30, offsetX: 0, offsetY: 6 } },
+      subtitle: { font: 'Inter', size: 28, weight: 600, letterSpacing: 6, lineHeight: 1.6, align: 'left', color: '#FF5A36', opacity: 1, case: 'uppercase', x: 0.08, y: 0.46 },
+      sample: { title: 'DAY 04', subtitle: 'PUSH YOUR LIMITS' }
+    },
+    {
+      id: 'birthday', name: 'Celebrate', category: 'special',
+      bg: '#0F0E13', overlay: { type: 'dark', opacity: 0.4, vignette: 0.4, blur: 0, tint: null, tintAlpha: 0 },
+      decor: { pill: true, pillText: 'A SPECIAL DAY' },
+      title: { font: 'Poppins', size: 104, weight: 700, letterSpacing: 0, lineHeight: 1.1, align: 'center', color: '#FFFFFF', opacity: 1, case: 'none', x: 0.5, y: 0.22, shadow: { enabled: true, color: 'rgba(0,0,0,0.5)', blur: 28, offsetX: 0, offsetY: 5 } },
+      subtitle: { font: 'Inter', size: 26, weight: 500, letterSpacing: 3, lineHeight: 1.6, align: 'center', color: '#FFD166', opacity: 1, case: 'uppercase', x: 0.5, y: 0.35 },
+      sample: { title: 'Happy Birthday', subtitle: 'CELEBRATING YOU TODAY' }
     }
   ];
-
-  const CATEGORIES = ['all', 'cinematic', 'travel', 'street', 'minimal', 'editorial', 'analog', 'quote', 'doodle'];
 
   function getTemplate(id) {
     return TEMPLATES.find(function (t) { return t.id === id; });
   }
 
+  /* default layers (used before any template, on reset) */
+  function defaultTitle() {
+    return {
+      font: 'Space Grotesk', size: 104, weight: 700, letterSpacing: 0, lineHeight: 1.1,
+      align: 'left', color: '#FFFFFF', opacity: 1, case: 'none', x: 0.08, y: 0.16,
+      gradient: null, shadow: { enabled: false, color: '#000000', blur: 24, offsetX: 0, offsetY: 6 }, outline: null
+    };
+  }
+  function defaultSubtitle() {
+    return {
+      font: 'Inter', size: 28, weight: 500, letterSpacing: 4, lineHeight: 1.6,
+      align: 'left', color: 'rgba(255,255,255,0.75)', opacity: 1, case: 'uppercase', x: 0.08, y: 0.3,
+      gradient: null, shadow: { enabled: false, color: '#000000', blur: 18, offsetX: 0, offsetY: 4 }, outline: null
+    };
+  }
+
+  function cloneLayer(L) {
+    return {
+      font: L.font, size: L.size, weight: L.weight, letterSpacing: L.letterSpacing,
+      lineHeight: L.lineHeight, align: L.align, color: L.color, opacity: L.opacity,
+      case: L.case, x: L.x, y: L.y,
+      gradient: L.gradient ? { colors: L.gradient.colors.slice(), angle: L.gradient.angle } : null,
+      shadow: L.shadow ? Object.assign({}, L.shadow) : null,
+      outline: L.outline ? Object.assign({}, L.outline) : null
+    };
+  }
+
+  /* Apply a template onto the state (keeps user's typed text if any) */
   function applyTemplateToState(state, id) {
     const tpl = getTemplate(id);
     if (!tpl) return false;
@@ -249,116 +318,143 @@
     S.bgColor = tpl.bg;
     S.overlay = Object.assign({}, tpl.overlay);
     S.decor = Object.assign({}, tpl.decor);
-    const oldTitleText = S.title.text;
-    const oldSubText = S.subtitle.text;
-    S.title = Object.assign({}, tpl.title);
-    S.subtitle = Object.assign({}, tpl.subtitle);
-    S.title.text = oldTitleText || '';
-    S.subtitle.text = oldSubText || '';
+    const oldTitle = S.title && S.title.text ? S.title.text : '';
+    const oldSub = S.subtitle && S.subtitle.text ? S.subtitle.text : '';
+    S.title = cloneLayer(tpl.title);
+    S.subtitle = cloneLayer(tpl.subtitle);
+    S.title.text = oldTitle || tpl.sample.title;
+    S.subtitle.text = oldSub || tpl.sample.subtitle;
+    S.elements = [];
+    S.activeElement = -1;
     return true;
   }
 
-  /* ------------------------------------------------------------
-     Smart Title Ideas (local dictionary — no AI, no API)
-     ------------------------------------------------------------ */
+  /* ---------------- position presets ---------------- */
+  const POSITIONS = {
+    'top-left': { x: 0.08, y: 0.12, align: 'left' },
+    'top-center': { x: 0.5, y: 0.12, align: 'center' },
+    'top-right': { x: 0.92, y: 0.12, align: 'right' },
+    'mid-left': { x: 0.08, y: 0.5, align: 'left' },
+    center: { x: 0.5, y: 0.5, align: 'center' },
+    'mid-right': { x: 0.92, y: 0.5, align: 'right' },
+    'bottom-left': { x: 0.08, y: 0.86, align: 'left' },
+    'bottom-center': { x: 0.5, y: 0.86, align: 'center' },
+    'bottom-right': { x: 0.92, y: 0.86, align: 'right' }
+  };
+
+  /* ---------------- sticker / element palette ---------------- */
+  const ELEMENTS = [
+    { id: 'emoji-fire', type: 'emoji', emoji: '🔥', label: 'Fire' },
+    { id: 'emoji-sparkles', type: 'emoji', emoji: '✨', label: 'Sparkles' },
+    { id: 'emoji-heart', type: 'emoji', emoji: '❤️', label: 'Heart' },
+    { id: 'emoji-star', type: 'emoji', emoji: '⭐', label: 'Star' },
+    { id: 'emoji-crown', type: 'emoji', emoji: '👑', label: 'Crown' },
+    { id: 'emoji-camera', type: 'emoji', emoji: '📸', label: 'Camera' },
+    { id: 'emoji-cinema', type: 'emoji', emoji: '🎬', label: 'Cinema' },
+    { id: 'emoji-plane', type: 'emoji', emoji: '✈️', label: 'Plane' },
+    { id: 'emoji-coffee', type: 'emoji', emoji: '☕', label: 'Coffee' },
+    { id: 'emoji-trophy', type: 'emoji', emoji: '🏆', label: 'Trophy' },
+    { id: 'emoji-rocket', type: 'emoji', emoji: '🚀', label: 'Rocket' },
+    { id: 'emoji-flower', type: 'emoji', emoji: '🌸', label: 'Flower' },
+    { id: 'emoji-flag', type: 'emoji', emoji: '🏁', label: 'Flag' },
+    { id: 'emoji-check', type: 'emoji', emoji: '✅', label: 'Check' },
+    { id: 'shape-circle', type: 'shape', shape: 'circle', label: 'Circle' },
+    { id: 'shape-oval', type: 'shape', shape: 'oval', label: 'Oval' },
+    { id: 'shape-star', type: 'shape', shape: 'star', label: 'Star Shape' },
+    { id: 'shape-arrow', type: 'shape', shape: 'arrow', label: 'Arrow' },
+    { id: 'shape-frame', type: 'shape', shape: 'frame', label: 'Frame' },
+    { id: 'shape-zigzag', type: 'shape', shape: 'zigzag', label: 'Zigzag' },
+    { id: 'badge-new', type: 'badge', text: 'NEW', label: 'NEW' },
+    { id: 'badge-sale', type: 'badge', text: 'SALE', label: 'SALE' },
+    { id: 'badge-hot', type: 'badge', text: 'HOT', label: 'HOT' },
+    { id: 'badge-special', type: 'badge', text: 'SPECIAL', label: 'SPECIAL' },
+    { id: 'badge-tutorial', type: 'badge', text: 'TUTORIAL', label: 'TUTORIAL' },
+    { id: 'badge-vlog', type: 'badge', text: 'VLOG', label: 'VLOG' }
+  ];
+
+  function getElementDef(id) {
+    return ELEMENTS.find(function (e) { return e.id === id; });
+  }
+
+  function makeElement(def) {
+    return {
+      type: def.type,
+      emoji: def.emoji || null,
+      shape: def.shape || null,
+      text: def.text || null,
+      x: 0.5, y: 0.5, scale: 1, rotation: 0,
+      color: def.type === 'badge' ? '#FF5A36' : '#FFFFFF',
+      opacity: 1
+    };
+  }
+
+  /* ---------------- smart title ideas (local dictionary) ---------------- */
   const TITLE_IDEAS = {
     travel: {
-      keys: ['jalan', 'pulang', 'pergi', 'libur', 'liburan', 'beach', 'pantai', 'gunung', 'sunset',
-             'senja', 'petualang', 'mudik', 'pasar', 'jembatan', 'hutan', 'pulau', 'pesawat', 'berangkat', 'peta', 'destinasi', 'pengembara'],
-      titles: ['SEPANJANG JALAN INI', 'JALAN PULANG', 'ADA CERITA DI SETIAP LANGKAH', 'SORE YANG TERTINGGAL',
-               'PULANG, TAPI TIDAK SELALU SAMA', 'LANGKAH KECIL KE TEMPAT JAUH', 'DI UJUNG SENJA', 'PERJALANAN YANG TIDAK DIRENCANAKAN']
+      keys: ['jalan', 'pulang', 'pergi', 'libur', 'beach', 'pantai', 'gunung', 'sunset', 'senja', 'petualang', 'mudik', 'pasar', 'pulau', 'pesawat', 'berangkat', 'peta', 'destinasi', 'pengembara'],
+      titles: ['SEPANJANG JALAN INI', 'JALAN PULANG', 'ADA CERITA DI SETIAP LANGKAH', 'SORE YANG TERTINGGAL', 'PULANG, TAPI TIDAK SELALU SAMA', 'LANGKAH KECIL KE TEMPAT JAUH', 'DI UJUNG SENJA', 'PERJALANAN YANG TIDAK DIRENCANAKAN']
     },
     street: {
-      keys: ['kota', 'malam', 'neon', 'kafe', 'lampu', 'stasiun', 'kereta', 'metro', 'tembok', 'gang',
-             'sepeda', 'hujan', 'bundaran', 'kendaraan', 'motor', 'mobil', 'ramai', 'senyap', 'jalan', 'trotoar'],
-      titles: ['CITY AFTER DARK', 'NEON RAIN', 'GANG YANG SEPI', 'KOTA TIDAK TIDUR', 'LAMPU-LAMPU KECIL',
-               'DI PERSIMPANGAN', 'JALAN YANG BERBICARA', 'MALAM PERTAMA DI KOTA INI']
+      keys: ['kota', 'malam', 'neon', 'kafe', 'lampu', 'stasiun', 'kereta', 'gang', 'sepeda', 'hujan', 'ramai', 'senyap', 'jalan', 'trotoar'],
+      titles: ['CITY AFTER DARK', 'NEON RAIN', 'GANG YANG SEPI', 'KOTA TIDAK TIDUR', 'LAMPU-LAMPU KECIL', 'DI PERSIMPANGAN', 'JALAN YANG BERBICARA', 'MALAM PERTAMA DI KOTA INI']
     },
     cinematic: {
-      keys: ['sore', 'senja', 'hujan', 'bayang', 'matahari', 'cahaya', 'kabut', 'gelap', 'film', 'moody',
-             'suasana', 'diam', 'sendiri', 'biru', 'kuning', 'jingga', 'pagi', 'senyap', 'langit', 'golden'],
-      titles: ['SCENE 01', 'A LIGHT IN THE DARK', 'SORE YANG PERLAHAN', 'SEBAGIAN LANGIT', 'BAYANG YANG TINGGAL',
-               'KABUT DI UJUNG JALAN', 'SUNSET UNTUK KAMU', 'THE LAST FRAME']
+      keys: ['sore', 'senja', 'hujan', 'bayang', 'matahari', 'cahaya', 'kabut', 'gelap', 'film', 'moody', 'suasana', 'diam', 'sendiri', 'biru', 'kuning', 'jingga', 'pagi', 'senyap', 'langit', 'golden'],
+      titles: ['SCENE 01', 'A LIGHT IN THE DARK', 'SORE YANG PERLAHAN', 'SEBAGIAN LANGIT', 'BAYANG YANG TINGGAL', 'KABUT DI UJUNG JALAN', 'SUNSET UNTUK KAMU', 'THE LAST FRAME']
     },
     lifestyle: {
-      keys: ['kopi', 'cafe', 'sarapan', 'buku', 'musik', 'rumah', 'libur', 'minggu', 'santai', 'teman',
-             'jalan-jalan', 'hari', 'hangat', 'senyum', 'bunga', 'sepeda', 'slow', 'sunday', 'pagi'],
-      titles: ['SUNDAY FEELING', 'SECANGKIR KOPI', 'HARI YANG LAMBAT', 'HIDUP YANG SEDERHANA', 'MOMENT YANG KECIL',
-               'RITUAL PAGI', 'JALAN-JALAN TANPA TUJUAN', 'RASA YANG TERSISA']
+      keys: ['kopi', 'cafe', 'sarapan', 'buku', 'musik', 'rumah', 'libur', 'minggu', 'santai', 'teman', 'jalan-jalan', 'hari', 'hangat', 'senyum', 'bunga', 'slow', 'sunday', 'pagi'],
+      titles: ['SUNDAY FEELING', 'SECANGKIR KOPI', 'HARI YANG LAMBAT', 'HIDUP YANG SEDERHANA', 'MOMENT YANG KECIL', 'RITUAL PAGI', 'JALAN-JALAN TANPA TUJUAN', 'RASA YANG TERSISA']
     },
     food: {
-      keys: ['makan', 'nasi', 'mie', 'roti', 'manis', 'pedas', 'dapur', 'kue', 'sate', 'bakso',
-             'gulai', 'sambal', 'teh', 'jus', 'seblak', 'noodles', 'brunch'],
-      titles: ['SELERA KOTA', 'RASA NUSANTARA', 'DARI DAPUR', 'SEDAPNYA HIDUP', 'RECIPE OF THE DAY',
-               'MANIS, PEDAS, DAN CERITA', 'MEJA MAKAN KITA']
+      keys: ['makan', 'nasi', 'mie', 'roti', 'manis', 'pedas', 'dapur', 'kue', 'sate', 'bakso', 'gulai', 'sambal', 'teh', 'jus', 'seblak', 'noodles', 'brunch'],
+      titles: ['SELERA KOTA', 'RASA NUSANTARA', 'DARI DAPUR', 'SEDAPNYA HIDUP', 'RECIPE OF THE DAY', 'MANIS, PEDAS, DAN CERITA', 'MEJA MAKAN KITA']
     },
     nature: {
-      keys: ['gunung', 'hutan', 'awan', 'pohon', 'daun', 'sungai', 'danau', 'angin', 'sejuk', 'hijau',
-             'biru', 'sawah', 'bukit', 'langit', 'pantai', 'senja', 'alam', 'embun', 'kabut'],
-      titles: ['KEMBALI KE ALAM', 'NAPAS HIJAU', 'DI BAWAH LANGIT', 'SUARA DAUN', 'BUKIT YANG BERNAPAS',
-               'PULANG KE HUTAN', 'SEJUK YANG LANGKA']
-    },
-    city: {
-      keys: ['gedung', 'pencakar', 'metro', 'toko', 'bandara', 'ramai', 'kilau', 'kota', 'beton', 'jembatan', 'stasiun'],
-      titles: ['KOTA INI MILIK KITA', 'BETON DAN LANGIT', 'JALAN UTAMA', 'KILAU KOTA', 'DARI ATAS MENARA',
-               'ORANG-ORANG KOTA']
+      keys: ['gunung', 'hutan', 'awan', 'pohon', 'daun', 'sungai', 'danau', 'angin', 'sejuk', 'hijau', 'sawah', 'bukit', 'langit', 'pantai', 'alam', 'embun', 'kabut'],
+      titles: ['KEMBALI KE ALAM', 'NAPAS HIJAU', 'DI BAWAH LANGIT', 'SUARA DAUN', 'BUKIT YANG BERNAPAS', 'PULANG KE HUTAN', 'SEJUK YANG LANGKA']
     },
     personal: {
-      keys: ['aku', 'kamu', 'kita', 'hidup', 'cerita', 'kenangan', 'rumah', 'pulang', 'rasa', 'perasaan',
-             'masa', 'waktu', 'tumbuh', 'belajar', 'luka', 'takut', 'harap', 'impian', 'mimpi', 'kembali'],
-      titles: ['UNTUK AKU YANG LAMA', 'HIDUP YANG SEDANG DIBANGUN', 'KENANGAN YANG TERSIMPAN', 'RUMAH, BUKAN HANYA TEMPAT',
-               'WAKTU YANG MENYEMBUHKAN', 'CERITA YANG BELUM SELESAI', 'BELAJAR LEPAS', 'KITA, PERLAHAN']
+      keys: ['aku', 'kamu', 'kita', 'hidup', 'cerita', 'kenangan', 'rumah', 'pulang', 'rasa', 'perasaan', 'masa', 'waktu', 'tumbuh', 'belajar', 'luka', 'takut', 'harap', 'impian', 'mimpi', 'kembali'],
+      titles: ['UNTUK AKU YANG LAMA', 'HIDUP YANG SEDANG DIBANGUN', 'KENANGAN YANG TERSIMPAN', 'RUMAH, BUKAN HANYA TEMPAT', 'WAKTU YANG MENYEMBUHKAN', 'CERITA YANG BELUM SELESAI', 'BELAJAR LEPAS', 'KITA, PERLAHAN']
     },
     quote: {
-      keys: ['kata', 'mutiara', 'kutipan', 'quote', 'bijak', 'inspirasi', 'motivasi', 'semangat', 'percaya',
-             'berani', 'fokus', 'pikiran', 'jangan', 'tetap', 'mulai', 'selesai', 'berhenti', 'berharap'],
-      titles: ['BERANI MULAI DARI NOL', 'FOKUS PADA LANGKAH BERIKUTNYA', 'MIMPI TANPA BATAS', 'KONSTANSI MENGALAHKAN BAKAT',
-               'JANGAN MENYERAH SEBELUM MENCOBA', 'JADI DIRI SENDIRI', 'HARI INI, SATU LANGKAH LAGI']
+      keys: ['kata', 'mutiara', 'kutipan', 'quote', 'bijak', 'inspirasi', 'motivasi', 'semangat', 'percaya', 'berani', 'fokus', 'pikiran', 'jangan', 'tetap', 'mulai', 'selesai', 'berhenti', 'berharap'],
+      titles: ['BERANI MULAI DARI NOL', 'FOKUS PADA LANGKAH BERIKUTNYA', 'MIMPI TANPA BATAS', 'KONSTANSI MENGALAHKAN BAKAT', 'JANGAN MENYERAH SEBELUM MENCOBA', 'JADI DIRI SENDIRI', 'HARI INI, SATU LANGKAH LAGI']
+    },
+    promo: {
+      keys: ['sale', 'promo', 'diskon', 'obral', 'murah', 'diskon', 'beli', 'terbatas', 'baru', 'launch', 'drop', 'deal', 'tawaran', 'harga'],
+      titles: ['BIG SALE NOW', 'UP TO 50% OFF', 'NEW DROP', 'LIMITED TIME ONLY', 'DON\u2019T MISS OUT', 'SEASON SALE', 'LAST CHANCE']
     }
   };
 
   function generateTitleIdeas(input) {
-    const words = String(input || '')
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, ' ')
-      .split(/\s+/)
-      .filter(Boolean);
+    const words = String(input || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean);
     if (!words.length) return [];
-
     const matched = [];
     Object.keys(TITLE_IDEAS).forEach(function (cat) {
-      const hit = TITLE_IDEAS[cat].keys.some(function (k) { return words.indexOf(k) !== -1; });
-      if (hit) matched.push(cat);
+      const has = TITLE_IDEAS[cat].keys.some(function (k) { return words.indexOf(k) !== -1; });
+      if (has) matched.push.apply(matched, TITLE_IDEAS[cat].titles);
     });
-
-    const result = [];
-    const used = {};
-    const push = function (t) {
-      if (!used[t]) { used[t] = true; result.push(t); }
-    };
-
-    matched.forEach(function (cat, i) {
-      TITLE_IDEAS[cat].titles.slice(0, i === 0 ? 3 : 2).forEach(push);
-    });
-    if (result.length < 3) {
-      const generic = [
-        TITLE_IDEAS.lifestyle.titles[0],
-        TITLE_IDEAS.quote.titles[0],
-        TITLE_IDEAS.personal.titles[2]
-      ];
-      generic.forEach(push);
-    }
-    return result.slice(0, 5);
+    const unique = [];
+    matched.forEach(function (t) { if (unique.indexOf(t) === -1) unique.push(t); });
+    return unique.slice(0, 12);
   }
 
   global.Coverly = global.Coverly || {};
   global.Coverly.Templates = {
     FONTS: FONTS,
-    fontStack: fontStack,
-    TEMPLATES: TEMPLATES,
     CATEGORIES: CATEGORIES,
+    TEMPLATES: TEMPLATES,
+    ELEMENTS: ELEMENTS,
     POSITIONS: POSITIONS,
     getTemplate: getTemplate,
+    getElementDef: getElementDef,
+    makeElement: makeElement,
+    fontStack: fontStack,
+    defaultTitle: defaultTitle,
+    defaultSubtitle: defaultSubtitle,
+    cloneLayer: cloneLayer,
     applyTemplateToState: applyTemplateToState,
     generateTitleIdeas: generateTitleIdeas
   };

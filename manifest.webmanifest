@@ -1,13 +1,13 @@
 {
   "name": "Coverly — Instagram Cover Generator",
   "short_name": "Coverly",
-  "description": "Create cinematic, clean and professional Instagram covers directly in your browser. 100% free and private.",
+  "description": "Design professional Instagram covers with 28 ready-to-use templates, brand kits, stickers, text effects and full-size batch export. 100% in your browser.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#f6f6f3",
-  "theme_color": "#0e0e0e",
+  "background_color": "#0b0b0f",
+  "theme_color": "#0b0b0f",
   "lang": "en",
   "icons": [
     {

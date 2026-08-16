@@ -2,6 +2,8 @@
    COVERLY — canvas.js
    Canvas rendering pipeline. Renders the full design into any
    canvas context (preview scaled or export at full resolution).
+   Supports text effects (gradient / shadow / outline), stickers
+   & shapes (elements) and procedural sample photos.
    ============================================================ */
 (function (global) {
   'use strict';
@@ -10,7 +12,7 @@
   const ACCENT = '#ff4a2e';
 
   /* Metrics of the last render — used for hit-testing + decorations */
-  const metrics = { title: null, subtitle: null };
+  const metrics = { title: null, subtitle: null, elements: [] };
 
   /* ---------------- seeded PRNG (deterministic doodles/grain) ---------------- */
   function mulberry32(a) {
@@ -73,17 +75,22 @@
     return lines;
   }
 
-  function fillLine(ctx, text, x, y, ls, align) {
-    if (!ls || ls <= 0) { ctx.fillText(text, x, y); return; }
-    const chars = Array.from(text);
-    if (align === 'left') {
-      let cx = x;
-      chars.forEach(function (ch) { ctx.fillText(ch, cx, y); cx += ctx.measureText(ch).width + ls; });
+  function drawLine(ctx, text, x, y, ls, align, mode) {
+    if (!text) return;
+    if (!ls || ls <= 0) {
+      if (mode === 'stroke') ctx.strokeText(text, x, y); else ctx.fillText(text, x, y);
       return;
     }
-    const total = measureWidth(ctx, text, ls);
-    let cx = align === 'center' ? x - total / 2 : x - total;
-    chars.forEach(function (ch) { ctx.fillText(ch, cx, y); cx += ctx.measureText(ch).width + ls; });
+    const chars = Array.from(text);
+    let total = 0;
+    const widths = chars.map(function (ch) { const w = ctx.measureText(ch).width; return w; });
+    widths.forEach(function (w) { total += w; });
+    total += ls * (chars.length - 1);
+    let cx = align === 'left' ? x : align === 'center' ? x - total / 2 : x - total;
+    chars.forEach(function (ch, i) {
+      if (mode === 'stroke') ctx.strokeText(ch, cx, y); else ctx.fillText(ch, cx, y);
+      cx += widths[i] + ls;
+    });
   }
 
   function roundRect(ctx, x, y, w, h, r) {
@@ -131,7 +138,28 @@
     ctx.restore();
   }
 
-  /* ---------------- text layer ---------------- */
+  /* ---------------- text layer (with effects) ---------------- */
+  function buildGradient(ctx, L, left, top, right, bottom) {
+    const g = L.gradient;
+    if (!g || !g.colors || g.colors.length < 2) return null;
+    const cx = (left + right) / 2;
+    const cy = (top + bottom) / 2;
+    const dx = (right - left) / 2;
+    const dy = (bottom - top) / 2;
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    const a = (g.angle != null ? g.angle : 90) * Math.PI / 180;
+    const x0 = cx - Math.cos(a) * len;
+    const y0 = cy - Math.sin(a) * len;
+    const x1 = cx + Math.cos(a) * len;
+    const y1 = cy + Math.sin(a) * len;
+    const grad = ctx.createLinearGradient(x0, y0, x1, y1);
+    const n = g.colors.length;
+    g.colors.forEach(function (c, i) {
+      grad.addColorStop(n === 1 ? 0 : i / (n - 1), c);
+    });
+    return grad;
+  }
+
   function drawTextLayer(ctx, S, W, H, key, decor) {
     const L = S[key];
     metrics[key] = null;
@@ -173,13 +201,37 @@
     ctx.save();
     ctx.globalAlpha = Math.max(0, Math.min(1, L.opacity != null ? L.opacity : 1));
     ctx.fillStyle = L.color;
+    ctx.strokeStyle = L.color;
+
+    const shadow = L.shadow;
+    if (shadow && shadow.enabled) {
+      ctx.shadowColor = shadow.color || '#000000';
+      ctx.shadowBlur = shadow.blur || 0;
+      ctx.shadowOffsetX = shadow.offsetX || 0;
+      ctx.shadowOffsetY = shadow.offsetY || 0;
+    }
+
+    const grad = buildGradient(ctx, L, left, top, left + maxLineWidth, bottom);
+    if (grad) ctx.fillStyle = grad;
 
     if (key === 'title' && decor.accentLine) drawAccentLine(ctx, centerX, bottom, maxLineWidth, W);
     if (key === 'title' && decor.pill) drawPill(ctx, centerX, top, decor.pillText, W);
 
+    const outline = L.outline;
     let y = top + size / 2;
+    if (outline && outline.color && outline.width > 0) {
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = outline.width;
+      ctx.strokeStyle = outline.color;
+      y = top + size / 2;
+      lines.forEach(function (line) {
+        drawLine(ctx, line, L.x * W, y, ls, L.align, 'stroke');
+        y += lineH;
+      });
+      y = top + size / 2;
+    }
     lines.forEach(function (line) {
-      fillLine(ctx, line, L.x * W, y, ls, L.align);
+      drawLine(ctx, line, L.x * W, y, ls, L.align, 'fill');
       y += lineH;
     });
     ctx.restore();
@@ -274,177 +326,252 @@
     ctx.restore();
   }
 
-  /* ---------------- doodles ---------------- */
-  function drawStar(ctx, x, y, r, rot) {
+  /* ---------------- elements (stickers / shapes / badges) ---------------- */
+  function starPath(ctx, cx, cy, r, points, rot) {
     ctx.beginPath();
-    for (let i = 0; i < 10; i++) {
-      const ang = rot + i * Math.PI / 5;
+    const n = points * 2;
+    for (let i = 0; i < n; i++) {
+      const ang = rot + i * Math.PI / points;
       const rad = (i % 2 === 0) ? r : r * 0.45;
-      const px = x + Math.cos(ang) * rad;
-      const py = y + Math.sin(ang) * rad;
+      const px = cx + Math.cos(ang) * rad;
+      const py = cy + Math.sin(ang) * rad;
       if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
     }
     ctx.closePath();
   }
 
-  function drawDoodles(ctx, S, W, H) {
-    const rnd = mulberry32(7 + (S.templateId || '').length);
+  function drawShape(ctx, el, W, H, R) {
+    const x = el.x * W, y = el.y * H;
     ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate((el.rotation || 0) * Math.PI / 180);
+    ctx.fillStyle = el.color;
+    ctx.strokeStyle = el.color;
+    ctx.globalAlpha = el.opacity != null ? el.opacity : 1;
+    ctx.lineWidth = Math.max(2, R * 0.16);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    const px = W / 1080;
-    const sw = Math.max(3, px * 3);
-    const t = metrics.title;
-    const sb = metrics.subtitle;
-    const tl = t ? t.left : W * 0.12;
-    const tw = t ? t.maxLineWidth : W * 0.6;
-    const tt = t ? t.top : H * 0.4;
-    const tb = t ? t.bottom : H * 0.55;
-
-    /* wavy underline under title */
-    if (t) {
-      ctx.strokeStyle = ACCENT;
-      ctx.lineWidth = sw * 1.6;
-      const y = tb + W * 0.035;
-      const x0 = t.left;
-      const x1 = t.left + tw;
-      const n = Math.max(3, Math.round(tw / (W * 0.09)));
-      const seg = (x1 - x0) / n;
-      ctx.beginPath();
-      ctx.moveTo(x0, y);
-      for (let i = 1; i <= n; i++) {
-        ctx.quadraticCurveTo(x0 + seg * (i - 0.5), y + seg * 0.4 * (i % 2 ? 1 : -1), x0 + seg * i, y);
-      }
-      ctx.stroke();
-    }
-
-    /* star near top-right of title */
-    if (t) {
-      const sx = Math.min(t.left + tw + W * 0.05, W * 0.9);
-      ctx.fillStyle = ACCENT;
-      drawStar(ctx, sx, tt - W * 0.01, W * 0.026, rnd() * Math.PI);
-      ctx.fill();
-      drawStar(ctx, sx - W * 0.02, tt + W * 0.05, W * 0.012, rnd() * Math.PI);
-      ctx.fill();
-    }
-
-    /* hand-drawn circle overlapping subtitle */
-    if (sb) {
-      ctx.strokeStyle = 'rgba(255,255,255,0.85)';
-      ctx.lineWidth = sw * 1.1;
-      ctx.beginPath();
-      const cr = W * 0.045;
-      const cxp = Math.max(sb.left - cr * 0.5, W * 0.02);
-      const cyp = (sb.top + sb.bottom) / 2;
-      ctx.arc(cxp, cyp, cr, 0.3, Math.PI * 1.9);
-      ctx.stroke();
-    }
-
-    /* arrow sweeping toward title */
-    if (t) {
-      ctx.strokeStyle = ACCENT;
-      ctx.lineWidth = sw * 1.2;
-      const x0 = W * 0.86;
-      const y0 = H * 0.18;
-      const x2 = Math.min(t.left + tw, W * 0.82);
-      const y2 = tb + W * 0.04;
-      ctx.beginPath();
-      ctx.moveTo(x0, y0);
-      ctx.quadraticCurveTo(x0 - W * 0.02, (y0 + y2) / 2, x2, y2);
-      ctx.stroke();
-      const ang = Math.atan2(y2 - (y0 + y2) / 2, x2 - (x0 - W * 0.02)) + Math.PI;
-      ctx.beginPath();
-      ctx.moveTo(x2, y2);
-      ctx.lineTo(x2 + Math.cos(ang - 0.42) * sw * 3, y2 + Math.sin(ang - 0.42) * sw * 3);
-      ctx.lineTo(x2 + Math.cos(ang + 0.42) * sw * 3, y2 + Math.sin(ang + 0.42) * sw * 3);
-      ctx.closePath();
-      ctx.fill();
-    }
-
-    /* sparkle near top-left of title */
-    if (t) {
-      ctx.strokeStyle = 'rgba(0,0,0,0.7)';
-      ctx.lineWidth = sw * 0.9;
-      const sx = Math.max(t.left - W * 0.04, W * 0.03);
-      const sy = tt + W * 0.01;
-      ctx.beginPath();
-      ctx.moveTo(sx - W * 0.018, sy); ctx.lineTo(sx + W * 0.018, sy);
-      ctx.moveTo(sx, sy - W * 0.018); ctx.lineTo(sx, sy + W * 0.018);
-      ctx.stroke();
-    }
-
-    /* dot trail under subtitle */
-    if (sb) {
-      ctx.fillStyle = ACCENT;
-      for (let i = 0; i < 4; i++) {
-        const d = (sb.left + tw * 0.5) + i * W * 0.018;
-        const dy = (sb.top + sb.bottom) / 2 + W * 0.05;
+    switch (el.shape) {
+      case 'circle':
+        ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill();
+        break;
+      case 'oval':
+        ctx.beginPath(); ctx.ellipse(0, 0, R * 1.35, R * 0.7, 0, 0, Math.PI * 2); ctx.fill();
+        break;
+      case 'star':
+        starPath(ctx, 0, 0, R, 5, 0); ctx.fill();
+        break;
+      case 'arrow': {
+        const s = R;
         ctx.beginPath();
-        ctx.arc(d, dy, W * 0.005, 0, Math.PI * 2);
+        ctx.moveTo(-s, -s * 0.55);
+        ctx.lineTo(s * 0.55, -s * 0.55);
+        ctx.lineTo(s * 0.55, -s);
+        ctx.lineTo(s * 1.45, 0);
+        ctx.lineTo(s * 0.55, s);
+        ctx.lineTo(s * 0.55, s * 0.55);
+        ctx.lineTo(-s, s * 0.55);
+        ctx.closePath();
         ctx.fill();
+        break;
+      }
+      case 'frame': {
+        const fw = R * 2, fh = R * 1.25;
+        roundRect(ctx, -fw / 2, -fh / 2, fw, fh, R * 0.3);
+        ctx.lineWidth = Math.max(3, R * 0.14);
+        ctx.stroke();
+        break;
+      }
+      case 'zigzag': {
+        const w = R * 2.4;
+        const n = 6;
+        const seg = w / n;
+        ctx.beginPath();
+        ctx.moveTo(-w / 2, 0);
+        for (let i = 1; i <= n; i++) {
+          ctx.lineTo(-w / 2 + seg * i, (i % 2 ? -1 : 1) * R * 0.5);
+        }
+        ctx.lineWidth = Math.max(3, R * 0.16);
+        ctx.stroke();
+        break;
       }
     }
-
     ctx.restore();
   }
 
-  /* ---------------- procedural sample photo ---------------- */
-  let basePhoto = null;
-  function getSamplePhoto() {
-    if (basePhoto) return basePhoto;
-    basePhoto = document.createElement('canvas');
+  function drawEmoji(ctx, el, W, H, fs) {
+    const x = el.x * W, y = el.y * H;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate((el.rotation || 0) * Math.PI / 180);
+    ctx.globalAlpha = el.opacity != null ? el.opacity : 1;
+    ctx.font = fs + 'px "Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(el.emoji, 0, 0);
+    ctx.restore();
+  }
+
+  function drawBadge(ctx, el, W, H) {
+    const x = el.x * W, y = el.y * H;
+    const fh = W * 0.052 * el.scale;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate((el.rotation || 0) * Math.PI / 180);
+    ctx.globalAlpha = el.opacity != null ? el.opacity : 1;
+    ctx.font = '700 ' + fh + 'px ' + T.fontStack('Montserrat');
+    const tw = ctx.measureText(el.text).width;
+    const padX = fh * 0.75;
+    const w = tw + padX * 2;
+    const h = fh * 1.85;
+    ctx.fillStyle = el.color;
+    roundRect(ctx, -w / 2, -h / 2, w, h, h / 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(el.text, 0, 0);
+    ctx.restore();
+  }
+
+  /* Returns logical bounds {x,y,w,h} for an element (used for hit-testing) */
+  function elementBounds(el, W, H) {
+    const cx = el.x * W, cy = el.y * H;
+    let w, h;
+    if (el.type === 'emoji') {
+      const fs = W * 0.16 * el.scale;
+      w = fs * 0.95; h = fs;
+    } else if (el.type === 'badge') {
+      const fh = W * 0.052 * el.scale;
+      const tw = fh * 3.4;
+      const padX = fh * 0.75;
+      w = tw + padX * 2; h = fh * 1.85;
+    } else {
+      const R = W * 0.075 * el.scale;
+      if (el.shape === 'oval') { w = R * 1.35 * 2; h = R * 0.7 * 2; }
+      else if (el.shape === 'arrow') { w = R * 2.45; h = R * 2; }
+      else if (el.shape === 'frame') { w = R * 2; h = R * 1.25; }
+      else if (el.shape === 'zigzag') { w = R * 2.4; h = R; }
+      else { w = R * 2; h = R * 2; }
+    }
+    return { cx: cx, cy: cy, w: w, h: h, rotation: (el.rotation || 0) * Math.PI / 180 };
+  }
+
+  function drawElements(ctx, S, W, H) {
+    metrics.elements = [];
+    if (!S.elements || !S.elements.length) return;
+    S.elements.forEach(function (el) {
+      if (el.type === 'emoji') {
+        const fs = W * 0.16 * el.scale;
+        drawEmoji(ctx, el, W, H, fs);
+      } else if (el.type === 'badge') {
+        drawBadge(ctx, el, W, H);
+      } else if (el.type === 'shape') {
+        const R = W * 0.075 * el.scale;
+        drawShape(ctx, el, W, H, R);
+      }
+      metrics.elements.push(elementBounds(el, W, H));
+    });
+  }
+
+  /* Draw dashed selection outline + handles around the active element */
+  function drawSelection(ctx, S, W, H) {
+    const i = S.activeElement;
+    if (i == null || i < 0 || !metrics.elements[i]) return;
+    const b = metrics.elements[i];
+    const px = W / 1080;
+    ctx.save();
+    ctx.translate(b.cx, b.cy);
+    ctx.rotate(b.rotation);
+    ctx.setLineDash([8 * px, 6 * px]);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2 * px;
+    ctx.strokeRect(-b.w / 2, -b.h / 2, b.w, b.h);
+    ctx.setLineDash([]);
+    const hs = 9 * px;
+    ctx.fillStyle = ACCENT;
+    [[-b.w / 2, -b.h / 2], [b.w / 2, -b.h / 2], [-b.w / 2, b.h / 2], [b.w / 2, b.h / 2]].forEach(function (p) {
+      ctx.fillRect(p[0] - hs / 2, p[1] - hs / 2, hs, hs);
+    });
+    ctx.restore();
+  }
+
+  /* Hit-test a point (logical coords) against all elements; returns index or -1 */
+  function elementHitTest(S, W, H, px, py) {
+    if (!S.elements) return -1;
+    for (let i = S.elements.length - 1; i >= 0; i--) {
+      const b = elementBounds(S.elements[i], W, H);
+      const dx = px - b.cx;
+      const dy = py - b.cy;
+      const c = Math.cos(-b.rotation);
+      const s = Math.sin(-b.rotation);
+      const lx = dx * c - dy * s;
+      const ly = dx * s + dy * c;
+      if (Math.abs(lx) <= b.w / 2 && Math.abs(ly) <= b.h / 2) return i;
+    }
+    return -1;
+  }
+
+  /* ---------------- procedural sample photos (3 variants) ---------------- */
+  const photoCache = [];
+
+  function makePhoto(seed, palette) {
+    const c = document.createElement('canvas');
     const w = 720, h = 900;
-    basePhoto.width = w; basePhoto.height = h;
-    const ctx = basePhoto.getContext('2d');
-    const rnd = mulberry32(99);
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d');
+    const rnd = mulberry32(seed);
 
     const g = ctx.createLinearGradient(0, 0, 0, h);
-    g.addColorStop(0, '#1c2333');
-    g.addColorStop(0.45, '#4a3f4f');
-    g.addColorStop(0.72, '#c96f4a');
-    g.addColorStop(1, '#2c2a30');
+    palette.sky.forEach(function (st) { g.addColorStop(st[0], st[1]); });
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, w, h);
 
+    const sunX = w * palette.sunX;
+    const sunY = h * palette.sunY;
     ctx.save();
-    ctx.fillStyle = '#ffd9a0';
+    ctx.fillStyle = palette.sun;
     ctx.beginPath();
-    ctx.arc(w * 0.62, h * 0.55, w * 0.09, 0, Math.PI * 2);
+    ctx.arc(sunX, sunY, w * 0.09, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 0.22;
     ctx.beginPath();
-    ctx.arc(w * 0.62, h * 0.55, w * 0.15, 0, Math.PI * 2);
+    ctx.arc(sunX, sunY, w * 0.16, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 
-    ctx.fillStyle = '#241f2b';
+    /* back ridge */
+    ctx.fillStyle = palette.ridge1;
     ctx.beginPath();
     ctx.moveTo(0, h);
-    ctx.lineTo(0, h * 0.68);
-    ctx.quadraticCurveTo(w * 0.22, h * 0.5, w * 0.4, h * 0.66);
-    ctx.quadraticCurveTo(w * 0.55, h * 0.78, w * 0.72, h * 0.6);
-    ctx.quadraticCurveTo(w * 0.86, h * 0.46, w, h * 0.62);
+    ctx.lineTo(0, h * 0.62);
+    ctx.quadraticCurveTo(w * 0.22, h * 0.44, w * 0.42, h * 0.6);
+    ctx.quadraticCurveTo(w * 0.58, h * 0.74, w * 0.76, h * 0.55);
+    ctx.quadraticCurveTo(w * 0.9, h * 0.4, w, h * 0.57);
     ctx.lineTo(w, h);
     ctx.closePath();
     ctx.fill();
 
-    ctx.fillStyle = '#17131c';
+    /* front ridge */
+    ctx.fillStyle = palette.ridge2;
     ctx.beginPath();
     ctx.moveTo(0, h);
-    ctx.lineTo(0, h * 0.82);
-    ctx.quadraticCurveTo(w * 0.3, h * 0.68, w * 0.52, h * 0.8);
-    ctx.quadraticCurveTo(w * 0.8, h * 0.92, w, h * 0.76);
+    ctx.lineTo(0, h * 0.8);
+    ctx.quadraticCurveTo(w * 0.3, h * 0.62, w * 0.55, h * 0.78);
+    ctx.quadraticCurveTo(w * 0.82, h * 0.92, w, h * 0.72);
     ctx.lineTo(w, h);
     ctx.closePath();
     ctx.fill();
 
-    ctx.save();
-    for (let i = 0; i < 60; i++) {
-      ctx.globalAlpha = 0.15 + rnd() * 0.65;
-      ctx.fillStyle = 'rgba(255,255,255,1)';
-      ctx.fillRect(rnd() * w, rnd() * h * 0.4, 1.5, 1.5);
+    if (palette.stars) {
+      ctx.save();
+      for (let i = 0; i < 60; i++) {
+        ctx.globalAlpha = 0.15 + rnd() * 0.65;
+        ctx.fillStyle = 'rgba(255,255,255,1)';
+        ctx.fillRect(rnd() * w, rnd() * h * 0.4, 1.5, 1.5);
+      }
+      ctx.restore();
     }
-    ctx.restore();
 
     ctx.save();
     ctx.globalAlpha = 0.45;
@@ -453,11 +580,33 @@
     ctx.fillRect(0, 0, w, h);
     ctx.restore();
 
-    return basePhoto;
+    return c;
+  }
+
+  function getSamplePhoto(index) {
+    const i = Math.max(0, Math.min(2, index || 0));
+    if (photoCache[i]) return photoCache[i];
+    const PALETTES = [
+      {
+        sky: [[0, '#1c2333'], [0.45, '#4a3f4f'], [0.72, '#c96f4a'], [1, '#2c2a30']],
+        sunX: 0.62, sunY: 0.55, sun: '#ffd9a0', ridge1: '#241f2b', ridge2: '#17131c', stars: true
+      },
+      {
+        sky: [[0, '#0f2027'], [0.5, '#203a43'], [0.8, '#2c5364'], [1, '#101820']],
+        sunX: 0.3, sunY: 0.4, sun: '#eef7ff', ridge1: '#1b2b33', ridge2: '#0e161b', stars: true
+      },
+      {
+        sky: [[0, '#f7d794'], [0.45, '#f5cd79'], [0.75, '#e15f41'], [1, '#c44569']],
+        sunX: 0.72, sunY: 0.68, sun: '#ffe8c2', ridge1: '#b64c3a', ridge2: '#7a2f28', stars: false
+      }
+    ];
+    photoCache[i] = makePhoto(99 + i * 17, PALETTES[i]);
+    return photoCache[i];
   }
 
   /* ---------------- main render ---------------- */
-  function render(ctx, S) {
+  function render(ctx, S, opts) {
+    const o = opts || {};
     const W = S.canvas.width;
     const H = S.canvas.height;
     const k = ctx.canvas.width / W;
@@ -486,8 +635,10 @@
 
     drawTextLayer(ctx, S, W, H, 'title', S.decor);
     drawTextLayer(ctx, S, W, H, 'subtitle', S.decor);
+    drawElements(ctx, S, W, H);
 
-    if (S.decor.doodle) drawDoodles(ctx, S, W, H);
+    if (o.selection) drawSelection(ctx, S, W, H);
+
     if (S.decor.grain) drawGrain(ctx, W, H);
   }
 
@@ -498,7 +649,7 @@
       templateId: tpl.id,
       canvas: { width: 1080, height: 1350 },
       bgColor: tpl.bg,
-      image: { img: getSamplePhoto(), offsetX: 0, offsetY: 0, scale: 1, rotation: 0 },
+      image: { img: getSamplePhoto(0), offsetX: 0, offsetY: 0, scale: 1, rotation: 0 },
       title: JSON.parse(JSON.stringify(tpl.title)),
       subtitle: JSON.parse(JSON.stringify(tpl.subtitle)),
       overlay: JSON.parse(JSON.stringify(tpl.overlay)),
@@ -512,7 +663,7 @@
     const k = canvas.width / W;
     const ctx = canvas.getContext('2d');
     ctx.setTransform(k, 0, 0, k, 0, 0);
-    render(ctx, state);
+    render(ctx, state, { selection: true });
   }
 
   function renderThumb(canvas, templateId) {
@@ -527,6 +678,7 @@
     renderThumb: renderThumb,
     sampleState: sampleState,
     getSamplePhoto: getSamplePhoto,
+    elementHitTest: elementHitTest,
     metrics: metrics
   };
 })(window);

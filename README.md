@@ -10,16 +10,19 @@ Coverly is a fast, modern and premium **Instagram cover generator** that runs en
 
 ## ✨ Features
 
-- **12 premium templates** — Cinematic, Travel, Street, Minimal, Editorial, Analog, Quote, Doodle & more, each with its own distinct character.
+- **28 premium templates** — Cinematic, Travel, Street, Minimal, Editorial, Quote, Product, Fashion, Music, Fitness, Birthday & more, across 8 categories. Each with its own distinct typography and color palette.
 - **Real-time canvas editor** — drag, zoom, rotate and reposition your photo with mouse, touch or trackpad (including pinch-to-zoom).
-- **Full text control** — 7 fonts, size, weight, letter-spacing, line-height, case, color, opacity, alignment and 7 position presets. Drag text anywhere on the canvas.
-- **Overlays & effects** — dark/light/gradient overlays, vignette, blur, film frame, film grain, sepia tint and hand-drawn doodles.
-- **Smart Title Ideas** — type a theme and get headline ideas generated **locally** (a simple keyword dictionary — no AI, no API).
+- **Full text control** — 8 fonts, size, weight, letter-spacing, line-height, case, color, opacity, alignment and 9 position presets. Drag text anywhere on the canvas.
+- **Text effects** — gradient fills, soft shadows and outlines, each fully customizable.
+- **Stickers & shapes** — 15 emojis, 6 shapes and 6 badges that you can drag, scale, rotate, recolor and layer on the canvas.
+- **Brand kits** — save your colors + fonts as a reusable brand kit and apply it to any template.
+- **Smart Title Ideas** — type a theme and get headline ideas generated **locally** (a keyword dictionary — no AI, no API).
+- **Instant photos** — drag & drop, paste from clipboard, or use built-in sample photos to try a template instantly.
 - **3 canvas sizes** — Portrait 1080×1350, Square 1080×1080, Story 1080×1920, with proportional scaling of your design.
+- **Batch export** — download the current size, or all 3 IG sizes at once, as PNG or JPG.
 - **Undo / Redo** — up to 60 history states + keyboard shortcuts.
-- **Export** — PNG or JPG (0.92 quality), full-resolution, with a final preview and estimated file size.
-- **Dark mode** — persisted to localStorage.
-- **Mobile-first** — canvas on top, bottom toolbar and bottom sheets on small screens.
+- **Dark mode** — premium dark theme by default, light toggle, persisted to localStorage.
+- **Mobile-first** — bottom toolbar and bottom sheets on small screens.
 - **100% private** — photos never leave your device.
 
 ## 🛠 Technologies
@@ -46,7 +49,7 @@ Coverly is a fast, modern and premium **Instagram cover generator** that runs en
 │   ├── app.js          # Init, view switching, PWA
 │   ├── editor.js       # State, history, canvas interactions
 │   ├── canvas.js       # Rendering pipeline
-│   ├── templates.js    # 12 templates + title ideas
+│   ├── templates.js    # 28 templates + title ideas
 │   ├── controls.js     # UI bindings, modals, keyboard
 │   ├── export.js       # PNG/JPG export
 │   └── storage.js      # localStorage wrapper
@@ -91,10 +94,9 @@ All asset paths are relative, `.nojekyll` is included and the service worker is 
 
 ## 🧩 Optional / future ideas
 
-- More templates & font presets
 - Multi-page albums
-- Custom brand kits (colors + fonts saved locally)
 - Advanced filters (HSL, curves)
+- Sharing templates between devices
 
 ## 📄 License
 

@@ -1,7 +1,7 @@
 /* ============================================================
    COVERLY — editor.js
    Editor state, undo/redo history and canvas interactions
-   (drag / zoom / rotate / pinch / wheel / text dragging).
+   (drag / zoom / rotate / pinch / wheel / text + element drag).
    ============================================================ */
 (function (global) {
   'use strict';
@@ -16,7 +16,8 @@
     return Object.assign({
       text: '', font: 'Space Grotesk', size: 96, weight: 700, letterSpacing: 0,
       lineHeight: 1.1, align: 'left', color: '#ffffff', opacity: 1, case: 'none',
-      x: 0.08, y: 0.16
+      x: 0.08, y: 0.16,
+      gradient: null, shadow: null, outline: null
     }, overrides || {});
   }
 
@@ -28,10 +29,33 @@
     title: defaultText(),
     subtitle: defaultText({ size: 30, weight: 500, letterSpacing: 4, lineHeight: 1.5, opacity: 0.75, x: 0.08, y: 0.3 }),
     overlay: { type: 'dark', opacity: 0.5, vignette: 0.45, blur: 0, tint: null, tintAlpha: 0 },
-    decor: { doodle: false, film: false, grain: false, accentLine: false, pill: false, pillText: '' },
+    decor: { accentLine: false, pill: false, pillText: '', film: false, grain: false },
+    elements: [],
+    activeElement: -1,
     activeText: 'title',
-    activeTab: 'edit'
+    activeTab: 'design'
   };
+
+  /* ---------------- deep clone helpers ---------------- */
+  function cloneLayer(L) {
+    if (!L) return L;
+    return {
+      text: L.text, font: L.font, size: L.size, weight: L.weight,
+      letterSpacing: L.letterSpacing, lineHeight: L.lineHeight, align: L.align,
+      color: L.color, opacity: L.opacity, case: L.case, x: L.x, y: L.y,
+      gradient: L.gradient ? { colors: L.gradient.colors.slice(), angle: L.gradient.angle } : null,
+      shadow: L.shadow ? Object.assign({}, L.shadow) : null,
+      outline: L.outline ? Object.assign({}, L.outline) : null
+    };
+  }
+
+  function cloneElement(el) {
+    return {
+      type: el.type, emoji: el.emoji, shape: el.shape, text: el.text,
+      x: el.x, y: el.y, scale: el.scale, rotation: el.rotation,
+      color: el.color, opacity: el.opacity
+    };
+  }
 
   /* ---------------- history ---------------- */
   /* history holds PRE-action snapshots; redoStack holds POST-action
@@ -48,10 +72,12 @@
         offsetX: state.image.offsetX, offsetY: state.image.offsetY,
         scale: state.image.scale, rotation: state.image.rotation
       },
-      title: Object.assign({}, state.title),
-      subtitle: Object.assign({}, state.subtitle),
+      title: cloneLayer(state.title),
+      subtitle: cloneLayer(state.subtitle),
       overlay: Object.assign({}, state.overlay),
-      decor: Object.assign({}, state.decor)
+      decor: Object.assign({}, state.decor),
+      elements: state.elements.map(cloneElement),
+      activeElement: state.activeElement
     };
   }
 
@@ -63,10 +89,12 @@
     state.image.offsetY = snap.image.offsetY;
     state.image.scale = snap.image.scale;
     state.image.rotation = snap.image.rotation;
-    state.title = Object.assign({}, snap.title);
-    state.subtitle = Object.assign({}, snap.subtitle);
+    state.title = snap.title;
+    state.subtitle = snap.subtitle;
     state.overlay = Object.assign({}, snap.overlay);
     state.decor = Object.assign({}, snap.decor);
+    state.elements = (snap.elements || []).map(cloneElement);
+    state.activeElement = snap.activeElement != null ? snap.activeElement : -1;
   }
 
   /* Push the CURRENT (pre-mutation) state onto history */
@@ -103,6 +131,7 @@
   let stageEl = null;
   let viewZoom = 1;
   let fitK = 0.6;
+  let currentK = 1;
 
   function fitPreview() {
     if (!previewCanvas || !stageEl) return;
@@ -121,8 +150,6 @@
     currentK = k;
   }
 
-  let currentK = 1;
-
   function setViewZoom(z) {
     viewZoom = Math.max(0.5, Math.min(2, z));
     fitPreview();
@@ -140,7 +167,7 @@
     requestAnimationFrame(function () {
       rafPending = false;
       const ctx = previewCanvas.getContext('2d');
-      Canvas.render(ctx, state);
+      Canvas.render(ctx, state, { selection: true });
       notify('render');
     });
   }
@@ -184,8 +211,31 @@
     if (pointers.size === 1) {
       const px = toUnits(e.offsetX);
       const py = toUnits(e.offsetY);
+
+      /* elements first (topmost) */
+      const elIdx = Canvas.elementHitTest(state, state.canvas.width, state.canvas.height, px, py);
+      if (elIdx >= 0) {
+        if (state.activeElement !== elIdx) {
+          state.activeElement = elIdx;
+          notify('element');
+        }
+        const el = state.elements[elIdx];
+        drag = {
+          mode: 'element',
+          index: elIdx,
+          startX: e.offsetX, startY: e.offsetY,
+          startNX: el.x, startNY: el.y,
+          committed: false
+        };
+        previewCanvas.classList.add('is-dragging');
+        render();
+        return;
+      }
+
+      /* then text layers */
       const hit = hitText(px, py);
       if (hit) {
+        if (state.activeElement >= 0) { state.activeElement = -1; notify('element'); }
         setActiveText(hit);
         const m = Canvas.metrics[hit];
         drag = {
@@ -200,6 +250,9 @@
         render();
         return;
       }
+
+      /* empty area: deselect element, then image drag */
+      if (state.activeElement >= 0) { state.activeElement = -1; notify('element'); render(); }
       if (state.image.img) {
         drag = {
           mode: 'image',
@@ -219,8 +272,6 @@
         scale0: state.image.scale,
         startOffsetX: state.image.offsetX,
         startOffsetY: state.image.offsetY,
-        startCenterX: state.image.offsetX,
-        startCenterY: state.image.offsetY,
         committed: false
       };
       previewCanvas.classList.add('is-dragging');
@@ -236,12 +287,22 @@
       drag.committed = true;
     }
 
-    if (drag.mode === 'text') {
+    const W = state.canvas.width;
+    const H = state.canvas.height;
+
+    if (drag.mode === 'element') {
+      const dx = toUnits(e.offsetX - drag.startX);
+      const dy = toUnits(e.offsetY - drag.startY);
+      const el = state.elements[drag.index];
+      if (el) {
+        el.x = Math.max(0, Math.min(1, drag.startNX + dx / W));
+        el.y = Math.max(0, Math.min(1, drag.startNY + dy / H));
+      }
+      render();
+    } else if (drag.mode === 'text') {
       const dx = toUnits(e.offsetX - drag.startX);
       const dy = toUnits(e.offsetY - drag.startY);
       const L = drag.layer;
-      const W = state.canvas.width;
-      const H = state.canvas.height;
       const nc = drag.startCenterX + dx;
       if (L.align === 'left') L.x = (nc - drag.maxW / 2) / W;
       else if (L.align === 'right') L.x = (nc + drag.maxW / 2) / W;
@@ -343,6 +404,8 @@
     state.image.offsetX = Math.round(state.image.offsetX * s);
     state.image.offsetY = Math.round(state.image.offsetY * s);
     state.overlay.blur = Math.round(state.overlay.blur * s);
+    if (state.title.shadow) state.title.shadow.blur = Math.round(state.title.shadow.blur * s);
+    if (state.subtitle.shadow) state.subtitle.shadow.blur = Math.round(state.subtitle.shadow.blur * s);
     fitPreview();
     render();
     notify('sync');
@@ -363,15 +426,76 @@
     state.title = defaultText();
     state.subtitle = defaultText({ size: 30, weight: 500, letterSpacing: 4, lineHeight: 1.5, opacity: 0.75, x: 0.08, y: 0.3 });
     state.overlay = { type: 'dark', opacity: 0.5, vignette: 0.45, blur: 0, tint: null, tintAlpha: 0 };
-    state.decor = { doodle: false, film: false, grain: false, accentLine: false, pill: false, pillText: '' };
+    state.decor = { accentLine: false, pill: false, pillText: '', film: false, grain: false };
     state.image.offsetX = 0;
     state.image.offsetY = 0;
     state.image.scale = 1;
     state.image.rotation = 0;
+    state.elements = [];
+    state.activeElement = -1;
     state.templateId = DEFAULT_TEMPLATE;
     state.bgColor = '#0c0c0e';
     render();
     notify('sync');
+  }
+
+  /* ---------------- elements ---------------- */
+  function selectElement(index) {
+    state.activeElement = index;
+    notify('element');
+    render();
+  }
+
+  function addElement(def) {
+    commit();
+    const el = T.makeElement(def);
+    state.elements.push(el);
+    state.activeElement = state.elements.length - 1;
+    render();
+    notify('element');
+    return state.activeElement;
+  }
+
+  /* mutate without committing (call commit() first for sliders/drags) */
+  function updateElement(index, patch) {
+    const el = state.elements[index];
+    if (!el) return;
+    Object.keys(patch).forEach(function (k) { el[k] = patch[k]; });
+    render();
+    notify('element');
+  }
+
+  function deleteElement(index) {
+    if (index == null || index < 0 || index >= state.elements.length) return;
+    commit();
+    state.elements.splice(index, 1);
+    state.activeElement = -1;
+    render();
+    notify('element');
+  }
+
+  function duplicateElement(index) {
+    const el = state.elements[index];
+    if (!el) return;
+    commit();
+    const copy = cloneElement(el);
+    copy.x = Math.max(0, Math.min(1, copy.x + 0.06));
+    copy.y = Math.max(0, Math.min(1, copy.y + 0.06));
+    state.elements.splice(index + 1, 0, copy);
+    state.activeElement = index + 1;
+    render();
+    notify('element');
+  }
+
+  function bringToFront(index) {
+    const el = state.elements[index];
+    if (!el || index === state.elements.length - 1) return;
+    commit();
+    state.elements.splice(index, 1);
+    state.elements.push(el);
+    state.activeElement = state.elements.length - 1;
+    render();
+    notify('element');
   }
 
   /* ---------------- init ---------------- */
@@ -421,6 +545,12 @@
     setActiveTab: setActiveTab,
     setViewZoom: setViewZoom,
     getViewZoom: getViewZoom,
+    selectElement: selectElement,
+    addElement: addElement,
+    updateElement: updateElement,
+    deleteElement: deleteElement,
+    duplicateElement: duplicateElement,
+    bringToFront: bringToFront,
     onStageResize: onStageResize
   };
 })(window);

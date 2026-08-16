@@ -1,7 +1,8 @@
 /* ============================================================
    COVERLY — controls.js
-   Binds every UI control: topbar, panels, templates, modals,
-   toasts, keyboard shortcuts and the mobile bottom sheet.
+   Binds every UI control: rail tabs, panels (design / image /
+   text / elements / brand), templates, modals, toasts, keyboard
+   shortcuts and the mobile bottom sheet.
    ============================================================ */
 (function (global) {
   'use strict';
@@ -14,6 +15,7 @@
 
   const els = {};
   let fileInfo = null;
+  let lastSampleIdx = 0;
 
   function $(id) { return document.getElementById(id); }
   function isMobile() { return window.innerWidth < 1024; }
@@ -33,7 +35,6 @@
   }
 
   /* ---------------- generic binding helpers ---------------- */
-  /* continuous input (typing, color picker): commit once at gesture start */
   function commitOnce(el) {
     if (el.dataset.c) return;
     el.dataset.c = '1';
@@ -41,7 +42,6 @@
   }
   function endCommit(el) { el.dataset.c = ''; }
 
-  /* range input: commit once at gesture start, apply continuously */
   function bindRange(el, apply) {
     el.addEventListener('pointerdown', function () { Editor.commit(); }, { passive: true });
     el.addEventListener('keydown', function (e) {
@@ -77,7 +77,7 @@
   function applyTheme(dark) {
     document.documentElement.dataset.theme = dark ? 'dark' : 'light';
     const m = document.querySelector('meta[name="theme-color"]');
-    if (m) m.setAttribute('content', dark ? '#0e0e0e' : '#f6f6f3');
+    if (m) m.setAttribute('content', dark ? '#0b0b0f' : '#f5f5f2');
   }
   function toggleTheme() {
     const dark = document.documentElement.dataset.theme !== 'dark';
@@ -90,71 +90,67 @@
     });
   }
 
-  /* ---------------- tabs / mobile tools / sheet ---------------- */
+  /* ---------------- tabs / rail / sheet ---------------- */
+  const PANELS = ['templates', 'design', 'image', 'text', 'elements', 'brand'];
+
   function selectTab(tab) {
-    if (tab === 'templates') {
-      if (isMobile()) {
-        Editor.setActiveTab('templates');
-        openSheet('templates');
-      } else {
-        const tabBtn = els.topTabs.querySelector('[data-tab="templates"]');
-        if (tabBtn) {
-          tabBtn.classList.add('is-highlight');
-          setTimeout(function () { tabBtn.classList.remove('is-highlight'); }, 1300);
-        }
-        els.panelTemplates.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
-      return;
-    }
+    if (tab === 'export') { Export.openModal(); return; }
     Editor.setActiveTab(tab);
     if (isMobile()) openSheet(tab);
   }
 
   function openSheet(name) {
-    if (name === 'templates') {
-      els.sheetBody.appendChild(els.panelTemplates);
-      els.sheetTitle.textContent = 'Templates';
-    } else {
-      if (els.panelTemplates.parentNode === els.sheetBody) {
-        els.sidebarLeft.appendChild(els.panelTemplates);
-      }
-      els.sheetTitle.textContent = name === 'edit' ? 'Image' : name === 'text' ? 'Text' : 'Adjust';
+    const panel = $('panel-' + name);
+    if (!panel) return;
+    if (panel.parentNode !== els.sheetBody) {
+      PANELS.forEach(function (p) {
+        const el = $('panel-' + p);
+        if (el && el.parentNode === els.sheetBody) {
+          els.panelContainer.appendChild(el);
+        }
+      });
+      els.sheetBody.appendChild(panel);
     }
+    const titles = {
+      templates: 'Templates', design: 'Design', image: 'Image',
+      text: 'Text', elements: 'Elements', brand: 'Brand Kit'
+    };
+    els.sheetTitle.textContent = titles[name] || name;
     els.sheet.dataset.open = 'true';
   }
 
   function closeSheet() {
+    if (!els.sheet) return;
     els.sheet.dataset.open = 'false';
-    if (els.panelTemplates.parentNode === els.sheetBody) {
-      els.sidebarLeft.appendChild(els.panelTemplates);
-    }
-  }
-
-  function onMobileTool(tool) {
-    if (tool === 'export') { Export.openModal(); return; }
-    Editor.setActiveTab(tool);
-    openSheet(tool);
+    PANELS.forEach(function (p) {
+      const el = $('panel-' + p);
+      if (el && el.parentNode === els.sheetBody) {
+        els.panelContainer.appendChild(el);
+      }
+    });
   }
 
   function syncTab() {
     const tab = S().activeTab;
-    els.topTabs.querySelectorAll('.tb-tab').forEach(function (b) {
-      const on = b.dataset.tab === tab;
-      b.classList.toggle('is-active', on);
-      b.setAttribute('aria-pressed', String(on));
+    document.querySelectorAll('.tb-tab[data-tab], .rail-btn[data-tab]').forEach(function (b) {
+      b.classList.toggle('is-active', b.dataset.tab === tab);
+      b.setAttribute('aria-pressed', String(b.dataset.tab === tab));
     });
-    els.mTools.forEach(function (b) {
+    document.querySelectorAll('.m-tool[data-mtool]').forEach(function (b) {
       b.classList.toggle('is-active', b.dataset.mtool === tab);
+      b.setAttribute('aria-pressed', String(b.dataset.mtool === tab));
     });
-    if (!isMobile()) {
-      ['edit', 'text', 'adjust'].forEach(function (p) {
+    if (!isMobile() && els.panelContainer) {
+      PANELS.forEach(function (p) {
         const el = $('panel-' + p);
-        if (el) el.classList.toggle('is-visible', p === tab);
+        if (el && el.parentNode === els.panelContainer) {
+          el.classList.toggle('is-visible', p === tab);
+        }
       });
     }
   }
 
-  /* ---------------- upload ---------------- */
+  /* ---------------- upload / image source ---------------- */
   function isEditorVisible() { return !$('view-editor').hidden; }
 
   function downscale(img, maxDim) {
@@ -202,17 +198,40 @@
     reader.readAsDataURL(file);
   }
 
+  function useSamplePhoto() {
+    const idx = lastSampleIdx % 3;
+    lastSampleIdx = idx + 1;
+    Editor.commit();
+    const st = S();
+    st.image.img = Canvas.getSamplePhoto(idx);
+    st.image.src = null;
+    st.image.offsetX = 0;
+    st.image.offsetY = 0;
+    st.image.scale = 1;
+    st.image.rotation = 0;
+    fileInfo = { name: 'Sample photo ' + (idx + 1), size: 0 };
+    Editor.render();
+    syncEmpty();
+    updateImgStatus();
+    showToast('Sample photo added');
+  }
+
   function updateImgStatus() {
     if (!fileInfo) return;
-    const kb = (fileInfo.size / 1024).toFixed(0);
+    const kb = fileInfo.size ? (fileInfo.size / 1024).toFixed(0) + ' KB' : 'built-in';
     els.imgStatus.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-check"/></svg> Loaded: ' +
-      fileInfo.name + ' (' + kb + ' KB) — stored locally';
+      fileInfo.name + ' (' + kb + ') — processed locally';
   }
 
   function bindUpload() {
-    els.dropzone.addEventListener('click', function () { els.fileInput.click(); });
-    els.emptyUploadBtn.addEventListener('click', function () { els.fileInput.click(); });
-    els.editUploadBtn.addEventListener('click', function () { els.fileInput.click(); });
+    els.dropzone.addEventListener('click', function (e) {
+      if (e.target.closest('.stage-toolbar')) return;
+      els.fileInput.click();
+    });
+    els.emptyUploadBtn.addEventListener('click', function (e) { e.stopPropagation(); els.fileInput.click(); });
+    els.emptySampleBtn.addEventListener('click', function (e) { e.stopPropagation(); useSamplePhoto(); });
+    els.editUploadBtn.addEventListener('click', function (e) { e.stopPropagation(); els.fileInput.click(); });
+    els.sampleBtn.addEventListener('click', function (e) { e.stopPropagation(); useSamplePhoto(); });
 
     els.fileInput.addEventListener('change', function () {
       if (els.fileInput.files[0]) handleFile(els.fileInput.files[0]);
@@ -249,6 +268,40 @@
   }
 
   /* ---------------- templates ---------------- */
+  function renderTemplateCats() {
+    els.templateCats.innerHTML = '';
+    const all = document.createElement('button');
+    all.type = 'button';
+    all.className = 'tpl-cat' + (Storage.get('lastCat') === 'all' || !Storage.get('lastCat') ? ' is-active' : '');
+    all.dataset.cat = 'all';
+    all.setAttribute('role', 'tab');
+    all.setAttribute('aria-selected', String(Storage.get('lastCat') === 'all'));
+    all.textContent = 'All';
+    els.templateCats.appendChild(all);
+    T.CATEGORIES.forEach(function (c) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'tpl-cat' + (Storage.get('lastCat') === c.id ? ' is-active' : '');
+      btn.dataset.cat = c.id;
+      btn.setAttribute('role', 'tab');
+      btn.setAttribute('aria-selected', String(Storage.get('lastCat') === c.id));
+      btn.textContent = c.name;
+      els.templateCats.appendChild(btn);
+    });
+    els.templateCats.querySelectorAll('.tpl-cat').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        els.templateCats.querySelectorAll('.tpl-cat').forEach(function (b) {
+          b.classList.remove('is-active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        btn.classList.add('is-active');
+        btn.setAttribute('aria-selected', 'true');
+        renderTemplateGrid(btn.dataset.cat);
+        Storage.set('lastCat', btn.dataset.cat);
+      });
+    });
+  }
+
   function renderTemplateGrid(cat) {
     els.templateGrid.innerHTML = '';
     const list = T.TEMPLATES.filter(function (t) { return cat === 'all' || t.category === cat; });
@@ -287,44 +340,115 @@
   }
 
   function bindTemplates() {
-    els.templateCats.querySelectorAll('.tpl-cat').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        els.templateCats.querySelectorAll('.tpl-cat').forEach(function (b) {
-          b.classList.remove('is-active');
-          b.setAttribute('aria-selected', 'false');
-        });
-        btn.classList.add('is-active');
-        btn.setAttribute('aria-selected', 'true');
-        renderTemplateGrid(btn.dataset.cat);
-        Storage.set('lastCat', btn.dataset.cat);
-      });
-    });
+    renderTemplateCats();
     renderTemplateGrid(Storage.get('lastCat') || 'all');
   }
 
-  /* ---------------- stage (canvas size + view zoom) ---------------- */
-  function syncSize() {
-    const c = S().canvas;
-    els.canvasSizeSelect.value = c.width + 'x' + c.height;
-  }
-  function syncZoomLabel() {
-    const z = Editor.getViewZoom();
-    els.zoomPct.textContent = Math.abs(z - 1) < 0.02 ? 'Fit' : Math.round(z * 100) + '%';
-  }
-  function bindStage() {
+  /* ---------------- design panel ---------------- */
+  const BG_SWATCHES = ['#0b0b0f', '#101014', '#0f1210', '#0c0c0e', '#1c1c22', '#f2efe7', '#edebe4', '#fafaf8', '#d9dad6', '#ffffff'];
+
+  function bindDesignPanel() {
+    els.bgSwatches.innerHTML = '';
+    BG_SWATCHES.forEach(function (c) {
+      const sw = document.createElement('button');
+      sw.type = 'button';
+      sw.className = 'bg-swatch';
+      sw.dataset.color = c;
+      sw.style.background = c;
+      sw.setAttribute('aria-label', 'Background ' + c);
+      els.bgSwatches.appendChild(sw);
+    });
+
     els.canvasSizeSelect.addEventListener('change', function () {
       const parts = els.canvasSizeSelect.value.split('x').map(Number);
       Editor.setCanvasSize(parts[0], parts[1]);
       Storage.set('canvasSize', els.canvasSizeSelect.value);
     });
-    els.zoomOutBtn.addEventListener('click', function () {
-      Editor.setViewZoom(Editor.getViewZoom() * 0.85);
-      syncZoomLabel();
+
+    els.bgColorInput.addEventListener('input', function () {
+      commitOnce(els.bgColorInput);
+      S().bgColor = els.bgColorInput.value;
+      Editor.render();
+      syncSwatches();
     });
-    els.zoomInBtn.addEventListener('click', function () {
-      Editor.setViewZoom(Editor.getViewZoom() * 1.18);
-      syncZoomLabel();
+    els.bgColorInput.addEventListener('change', function () { endCommit(els.bgColorInput); });
+    els.bgSwatches.addEventListener('click', function (e) {
+      const sw = e.target.closest('.bg-swatch');
+      if (!sw) return;
+      Editor.commit();
+      S().bgColor = sw.dataset.color;
+      els.bgColorInput.value = S().bgColor;
+      Editor.render();
+      syncSwatches();
     });
+
+    bindSegGroup(els.ovSeg, function (btn) {
+      Editor.commit();
+      S().overlay.type = btn.dataset.ovtype;
+      Editor.render();
+      syncDesign();
+    });
+    bindRange(els.ovRange, function (v) {
+      S().overlay.opacity = v / 100;
+      els.ovVal.textContent = v + '%';
+    });
+    bindRange(els.vigRange, function (v) {
+      S().overlay.vignette = v / 100;
+      els.vigVal.textContent = v + '%';
+    });
+    bindRange(els.blurRange, function (v) {
+      S().overlay.blur = v;
+      els.blurVal.textContent = v + 'px';
+    });
+
+    function bindToggle(btn, key) {
+      btn.addEventListener('click', function () {
+        Editor.commit();
+        const on = btn.getAttribute('aria-checked') !== 'true';
+        btn.setAttribute('aria-checked', String(on));
+        S().decor[key] = on;
+        Editor.render();
+      });
+    }
+    bindToggle(els.accentLineToggle, 'accentLine');
+    bindToggle(els.pillToggle, 'pill');
+    bindToggle(els.filmToggle, 'film');
+    bindToggle(els.grainToggle, 'grain');
+
+    els.pillTextInput.addEventListener('input', function () {
+      commitOnce(els.pillTextInput);
+      S().decor.pillText = els.pillTextInput.value;
+      Editor.render();
+    });
+    els.pillTextInput.addEventListener('blur', function () { endCommit(els.pillTextInput); });
+
+    els.browseTplBtn.addEventListener('click', function () { selectTab('templates'); });
+  }
+
+  function syncSwatches() {
+    els.bgSwatches.querySelectorAll('.bg-swatch').forEach(function (sw) {
+      sw.classList.toggle('is-active', sw.dataset.color.toLowerCase() === S().bgColor.toLowerCase());
+    });
+  }
+
+  function syncDesign() {
+    const o = S().overlay;
+    els.bgColorInput.value = S().bgColor;
+    syncSwatches();
+    els.ovSeg.querySelectorAll('.seg-btn').forEach(function (b) {
+      b.classList.toggle('is-active', b.dataset.ovtype === o.type);
+    });
+    els.ovRange.value = Math.round(o.opacity * 100);
+    els.ovVal.textContent = els.ovRange.value + '%';
+    els.vigRange.value = Math.round(o.vignette * 100);
+    els.vigVal.textContent = els.vigRange.value + '%';
+    els.blurRange.value = Math.round(o.blur);
+    els.blurVal.textContent = els.blurRange.value + 'px';
+    els.accentLineToggle.setAttribute('aria-checked', String(!!S().decor.accentLine));
+    els.pillToggle.setAttribute('aria-checked', String(!!S().decor.pill));
+    els.filmToggle.setAttribute('aria-checked', String(!!S().decor.film));
+    els.grainToggle.setAttribute('aria-checked', String(!!S().decor.grain));
+    els.pillTextInput.value = S().decor.pillText || '';
   }
 
   /* ---------------- image panel ---------------- */
@@ -353,14 +477,14 @@
     });
     els.rotMinusBtn.addEventListener('click', function () {
       Editor.commit();
-      S().image.rotation = Math.max(-45, Math.round(S().image.rotation) - 5);
+      S().image.rotation = Math.max(-180, Math.round(S().image.rotation) - 5);
       els.rotRange.value = S().image.rotation;
       els.rotVal.textContent = S().image.rotation + '\u00b0';
       Editor.render();
     });
     els.rotPlusBtn.addEventListener('click', function () {
       Editor.commit();
-      S().image.rotation = Math.min(45, Math.round(S().image.rotation) + 5);
+      S().image.rotation = Math.min(180, Math.round(S().image.rotation) + 5);
       els.rotRange.value = S().image.rotation;
       els.rotVal.textContent = S().image.rotation + '\u00b0';
       Editor.render();
@@ -414,6 +538,46 @@
       });
       li.appendChild(apply);
       els.ideasList.appendChild(li);
+    });
+  }
+
+  function setGradient(on) {
+    const L = S()[S().activeText];
+    if (on) {
+      if (!L.gradient) {
+        L.gradient = { colors: [L.color, '#ff5a36'], angle: 90 };
+      } else if (!L.gradient.colors) {
+        L.gradient.colors = [L.color, '#ff5a36'];
+      }
+    } else {
+      L.gradient = null;
+    }
+    syncText();
+    Editor.render();
+  }
+
+  function setShadow(on) {
+    const L = S()[S().activeText];
+    if (!L.shadow) L.shadow = { enabled: false, color: '#000000', blur: 24, offsetX: 0, offsetY: 6 };
+    L.shadow.enabled = on;
+    syncText();
+    Editor.render();
+  }
+
+  function setOutline(on) {
+    const L = S()[S().activeText];
+    L.outline = on ? { color: '#000000', width: 6 } : null;
+    syncText();
+    Editor.render();
+  }
+
+  function bindEffectGroup(toggle, groupEl, action) {
+    toggle.addEventListener('click', function () {
+      Editor.commit();
+      const on = toggle.getAttribute('aria-checked') !== 'true';
+      toggle.setAttribute('aria-checked', String(on));
+      groupEl.classList.toggle('is-open', on);
+      action(on);
     });
   }
 
@@ -474,6 +638,74 @@
       els.opacityVal.textContent = v + '%';
     });
 
+    /* gradient */
+    bindEffectGroup(els.gradToggle, els.gradGroup, setGradient);
+    els.gradColor1.addEventListener('input', function () {
+      commitOnce(els.gradColor1);
+      const L = S()[S().activeText];
+      if (!L.gradient) L.gradient = { colors: [els.gradColor1.value, '#ff5a36'], angle: 90 };
+      L.gradient.colors[0] = els.gradColor1.value;
+      Editor.render();
+    });
+    els.gradColor1.addEventListener('change', function () { endCommit(els.gradColor1); });
+    els.gradColor2.addEventListener('input', function () {
+      commitOnce(els.gradColor2);
+      const L = S()[S().activeText];
+      if (!L.gradient) L.gradient = { colors: [L.color, els.gradColor2.value], angle: 90 };
+      L.gradient.colors[1] = els.gradColor2.value;
+      Editor.render();
+    });
+    els.gradColor2.addEventListener('change', function () { endCommit(els.gradColor2); });
+    bindRange(els.gradAngle, function (v) {
+      const L = S()[S().activeText];
+      if (!L.gradient) L.gradient = { colors: [L.color, '#ff5a36'], angle: v };
+      L.gradient.angle = v;
+      els.gradAngleVal.textContent = v + '\u00b0';
+    });
+
+    /* shadow */
+    bindEffectGroup(els.shadowToggle, els.shadowGroup, setShadow);
+    els.shadowColor.addEventListener('input', function () {
+      commitOnce(els.shadowColor);
+      const L = S()[S().activeText];
+      if (!L.shadow) L.shadow = { enabled: true, color: els.shadowColor.value, blur: 24, offsetX: 0, offsetY: 6 };
+      L.shadow.color = els.shadowColor.value;
+      Editor.render();
+    });
+    els.shadowColor.addEventListener('change', function () { endCommit(els.shadowColor); });
+    bindRange(els.shadowBlur, function (v) {
+      S()[S().activeText].shadow = S()[S().activeText].shadow || { enabled: true, color: '#000000', blur: v, offsetX: 0, offsetY: 6 };
+      S()[S().activeText].shadow.blur = v;
+      els.shadowBlurVal.textContent = v + 'px';
+    });
+    bindRange(els.shadowX, function (v) {
+      S()[S().activeText].shadow = S()[S().activeText].shadow || { enabled: true, color: '#000000', blur: 24, offsetX: v, offsetY: 0 };
+      S()[S().activeText].shadow.offsetX = v;
+      els.shadowXVal.textContent = v + 'px';
+    });
+    bindRange(els.shadowY, function (v) {
+      S()[S().activeText].shadow = S()[S().activeText].shadow || { enabled: true, color: '#000000', blur: 24, offsetX: 0, offsetY: v };
+      S()[S().activeText].shadow.offsetY = v;
+      els.shadowYVal.textContent = v + 'px';
+    });
+
+    /* outline */
+    bindEffectGroup(els.outlineToggle, els.outlineGroup, setOutline);
+    els.outlineColor.addEventListener('input', function () {
+      commitOnce(els.outlineColor);
+      const L = S()[S().activeText];
+      L.outline = L.outline || { color: els.outlineColor.value, width: 6 };
+      L.outline.color = els.outlineColor.value;
+      Editor.render();
+    });
+    els.outlineColor.addEventListener('change', function () { endCommit(els.outlineColor); });
+    bindRange(els.outlineWidth, function (v) {
+      const L = S()[S().activeText];
+      L.outline = L.outline || { color: '#000000', width: v };
+      L.outline.width = v;
+      els.outlineWidthVal.textContent = v + 'px';
+    });
+
     els.posBtns.forEach(function (b) {
       b.addEventListener('click', function () {
         Editor.commit();
@@ -520,6 +752,35 @@
     els.opacityRange.value = Math.round(L.opacity * 100);
     els.opacityVal.textContent = els.opacityRange.value + '%';
 
+    /* gradient */
+    const hasGrad = !!L.gradient;
+    els.gradToggle.setAttribute('aria-checked', String(hasGrad));
+    els.gradGroup.classList.toggle('is-open', hasGrad);
+    els.gradColor1.value = (L.gradient && L.gradient.colors[0]) || L.color;
+    els.gradColor2.value = (L.gradient && L.gradient.colors[1]) || '#ff5a36';
+    els.gradAngle.value = (L.gradient && L.gradient.angle) || 90;
+    els.gradAngleVal.textContent = els.gradAngle.value + '\u00b0';
+
+    /* shadow */
+    const sh = L.shadow;
+    els.shadowToggle.setAttribute('aria-checked', String(!!(sh && sh.enabled)));
+    els.shadowGroup.classList.toggle('is-open', !!(sh && sh.enabled));
+    els.shadowColor.value = (sh && sh.color) || '#000000';
+    els.shadowBlur.value = (sh && sh.blur) || 24;
+    els.shadowBlurVal.textContent = els.shadowBlur.value + 'px';
+    els.shadowX.value = (sh && sh.offsetX) || 0;
+    els.shadowXVal.textContent = els.shadowX.value + 'px';
+    els.shadowY.value = (sh && sh.offsetY) || 0;
+    els.shadowYVal.textContent = els.shadowY.value + 'px';
+
+    /* outline */
+    const ol = L.outline;
+    els.outlineToggle.setAttribute('aria-checked', String(!!ol));
+    els.outlineGroup.classList.toggle('is-open', !!ol);
+    els.outlineColor.value = (ol && ol.color) || '#000000';
+    els.outlineWidth.value = (ol && ol.width) || 6;
+    els.outlineWidthVal.textContent = els.outlineWidth.value + 'px';
+
     els.posBtns.forEach(function (b) { b.classList.remove('is-active'); });
     Object.keys(T.POSITIONS).forEach(function (k) {
       const p = T.POSITIONS[k];
@@ -530,60 +791,232 @@
     });
   }
 
-  /* ---------------- adjust panel ---------------- */
-  function bindAdjustPanel() {
-    bindSegGroup(els.ovSeg, function (btn) {
-      Editor.commit();
-      S().overlay.type = btn.dataset.ovtype;
-      Editor.render();
-      syncAdjust();
-    });
-    bindRange(els.ovRange, function (v) {
-      S().overlay.opacity = v / 100;
-      els.ovVal.textContent = v + '%';
-    });
-    bindRange(els.vigRange, function (v) {
-      S().overlay.vignette = v / 100;
-      els.vigVal.textContent = v + '%';
-    });
-    bindRange(els.blurRange, function (v) {
-      S().overlay.blur = v;
-      els.blurVal.textContent = v + 'px';
-    });
+  /* ---------------- elements panel ---------------- */
+  const ELEMENT_GROUPS = [
+    { label: 'Emojis', types: ['emoji'] },
+    { label: 'Shapes', types: ['shape'] },
+    { label: 'Badges', types: ['badge'] }
+  ];
 
-    function bindToggle(btn, key) {
-      btn.addEventListener('click', function () {
-        Editor.commit();
-        const on = btn.getAttribute('aria-checked') !== 'true';
-        btn.setAttribute('aria-checked', String(on));
-        S().decor[key] = on;
-        Editor.render();
+  function renderElementPalette() {
+    els.elPalette.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    ELEMENT_GROUPS.forEach(function (grp) {
+      const head = document.createElement('h4');
+      head.className = 'el-group-title';
+      head.textContent = grp.label;
+      frag.appendChild(head);
+      const grid = document.createElement('div');
+      grid.className = 'el-palette-grid';
+      T.ELEMENTS.forEach(function (def) {
+        if (grp.types.indexOf(def.type) === -1) return;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'el-add';
+        btn.dataset.elem = def.id;
+        btn.setAttribute('aria-label', 'Add ' + def.label);
+        if (def.type === 'emoji') {
+          btn.textContent = def.emoji;
+        } else if (def.type === 'badge') {
+          btn.textContent = def.text;
+          btn.className = 'el-add el-add--badge';
+        } else {
+          btn.innerHTML = '<svg class="icon"><use href="#i-' + def.shape + '"/></svg>';
+        }
+        btn.addEventListener('click', function () {
+          Editor.addElement(T.getElementDef(def.id));
+          showToast(def.label + ' added');
+          syncElements();
+        });
+        grid.appendChild(btn);
       });
-    }
-    bindToggle(els.doodleToggle, 'doodle');
-    bindToggle(els.filmToggle, 'film');
-    bindToggle(els.grainToggle, 'grain');
+      frag.appendChild(grid);
+    });
+    els.elPalette.appendChild(frag);
   }
 
-  function syncAdjust() {
-    const o = S().overlay;
-    els.ovSeg.querySelectorAll('.seg-btn').forEach(function (b) {
-      b.classList.toggle('is-active', b.dataset.ovtype === o.type);
+  function renderElementList() {
+    els.elList.innerHTML = '';
+    const st = S();
+    st.elements.forEach(function (el, i) {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'el-chip' + (st.activeElement === i ? ' is-active' : '');
+      chip.dataset.index = String(i);
+      let label = el.text || el.emoji || el.shape;
+      if (el.type === 'shape') label = el.shape;
+      chip.textContent = label;
+      chip.addEventListener('click', function () {
+        Editor.selectElement(i);
+        syncElements();
+      });
+      els.elList.appendChild(chip);
     });
-    els.ovRange.value = Math.round(o.opacity * 100);
-    els.ovVal.textContent = els.ovRange.value + '%';
-    els.vigRange.value = Math.round(o.vignette * 100);
-    els.vigVal.textContent = els.vigRange.value + '%';
-    els.blurRange.value = Math.round(o.blur);
-    els.blurVal.textContent = els.blurRange.value + 'px';
-    els.doodleToggle.setAttribute('aria-checked', String(!!S().decor.doodle));
-    els.filmToggle.setAttribute('aria-checked', String(!!S().decor.film));
-    els.grainToggle.setAttribute('aria-checked', String(!!S().decor.grain));
+  }
+
+  function syncElements() {
+    renderElementList();
+    const i = S().activeElement;
+    els.elControls.hidden = i < 0;
+    if (i < 0) return;
+    const el = S().elements[i];
+    els.elScale.value = Math.round(el.scale * 100);
+    els.elScaleVal.textContent = el.scale.toFixed(2);
+    els.elRot.value = Math.round(el.rotation);
+    els.elRotVal.textContent = els.elRot.value + '\u00b0';
+    els.elOpacity.value = Math.round(el.opacity * 100);
+    els.elOpacityVal.textContent = els.elOpacity.value + '%';
+    els.elColor.hidden = el.type === 'emoji';
+    els.elColor.value = el.color;
+  }
+
+  function bindElementsPanel() {
+    renderElementPalette();
+
+    bindRange(els.elScale, function (v) {
+      if (S().activeElement < 0) return;
+      Editor.updateElement(S().activeElement, { scale: v / 100 });
+      els.elScaleVal.textContent = (v / 100).toFixed(2);
+    });
+    bindRange(els.elRot, function (v) {
+      if (S().activeElement < 0) return;
+      Editor.updateElement(S().activeElement, { rotation: v });
+      els.elRotVal.textContent = v + '\u00b0';
+    });
+    bindRange(els.elOpacity, function (v) {
+      if (S().activeElement < 0) return;
+      Editor.updateElement(S().activeElement, { opacity: v / 100 });
+      els.elOpacityVal.textContent = v + '%';
+    });
+    els.elColor.addEventListener('input', function () {
+      commitOnce(els.elColor);
+      if (S().activeElement < 0) return;
+      Editor.updateElement(S().activeElement, { color: els.elColor.value });
+    });
+    els.elColor.addEventListener('change', function () { endCommit(els.elColor); });
+
+    els.elDeleteBtn.addEventListener('click', function () {
+      Editor.deleteElement(S().activeElement);
+      syncElements();
+      showToast('Element removed');
+    });
+    els.elDupBtn.addEventListener('click', function () {
+      Editor.duplicateElement(S().activeElement);
+      syncElements();
+      showToast('Element duplicated');
+    });
+    els.elFrontBtn.addEventListener('click', function () {
+      Editor.bringToFront(S().activeElement);
+      syncElements();
+      showToast('Element brought to front');
+    });
+  }
+
+  /* ---------------- brand panel ---------------- */
+  function saveBrandKit() {
+    const name = els.brandName.value.trim();
+    const st = S();
+    if (!name) { showToast('Give your kit a name first.', 'error'); return; }
+    const id = Storage.kits.save({
+      name: name,
+      colors: [st.bgColor, st.title.color, st.subtitle.color],
+      fonts: [st.title.font, st.subtitle.font]
+    });
+    els.brandName.value = '';
+    renderBrandList();
+    showToast('Brand kit saved');
+    return id;
+  }
+
+  function applyBrandKit(id) {
+    const kit = Storage.kits.list().find(function (k) { return k.id === id; });
+    if (!kit) return;
+    Editor.commit();
+    const st = S();
+    st.bgColor = kit.colors[0];
+    st.title.color = kit.colors[1];
+    st.subtitle.color = kit.colors[2];
+    st.title.font = kit.fonts[0];
+    st.subtitle.font = kit.fonts[1];
+    Editor.render();
+    syncAll();
+    showToast('Brand kit applied');
+  }
+
+  function renderBrandList() {
+    els.brandList.innerHTML = '';
+    const kits = Storage.kits.list();
+    if (!kits.length) {
+      const empty = document.createElement('p');
+      empty.className = 'brand-empty';
+      empty.textContent = 'No saved kits yet. Design something and save it as your brand.';
+      els.brandList.appendChild(empty);
+      return;
+    }
+    kits.forEach(function (kit) {
+      const item = document.createElement('div');
+      item.className = 'brand-item';
+      const info = document.createElement('div');
+      info.className = 'brand-info';
+      const dots = document.createElement('div');
+      dots.className = 'brand-dots';
+      kit.colors.forEach(function (c) {
+        const d = document.createElement('span');
+        d.className = 'brand-dot';
+        d.style.background = c;
+        dots.appendChild(d);
+      });
+      const name = document.createElement('span');
+      name.className = 'brand-name';
+      name.textContent = kit.name;
+      info.appendChild(dots);
+      info.appendChild(name);
+      const actions = document.createElement('div');
+      actions.className = 'brand-actions';
+      const applyBtn = document.createElement('button');
+      applyBtn.type = 'button';
+      applyBtn.className = 'btn btn-ghost btn-sm';
+      applyBtn.textContent = 'Apply';
+      applyBtn.addEventListener('click', function () { applyBrandKit(kit.id); });
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'icon-btn';
+      delBtn.setAttribute('aria-label', 'Delete brand kit ' + kit.name);
+      delBtn.innerHTML = '<svg class="icon"><use href="#i-trash"/></svg>';
+      delBtn.addEventListener('click', function () {
+        Storage.kits.remove(kit.id);
+        renderBrandList();
+        showToast('Brand kit deleted');
+      });
+      actions.appendChild(applyBtn);
+      actions.appendChild(delBtn);
+      item.appendChild(info);
+      item.appendChild(actions);
+      els.brandList.appendChild(item);
+    });
+  }
+
+  function bindBrandPanel() {
+    els.brandSaveBtn.addEventListener('click', saveBrandKit);
+    els.brandName.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); saveBrandKit(); }
+    });
+    renderBrandList();
+  }
+
+  function syncBrand() {
+    els.brandSwatch.setAttribute('style', 'background: ' + S().bgColor);
+    els.brandTitleColor.setAttribute('style', 'background: ' + S().title.color);
+    els.brandSubColor.setAttribute('style', 'background: ' + S().subtitle.color);
+    els.brandTitleFont.textContent = S().title.font;
+    els.brandSubFont.textContent = S().subtitle.font;
   }
 
   /* ---------------- empty state ---------------- */
   function syncEmpty() {
-    const has = Editor.hasImage();
+    /* The empty overlay only makes sense before a template is applied:
+       once a design exists the canvas speaks for itself. */
+    const has = Editor.hasImage() || !!S().templateId;
     if (els.canvasEmpty.hidden !== has) {
       els.canvasEmpty.hidden = has;
     }
@@ -593,6 +1026,31 @@
   function syncHistory() {
     els.undoBtn.disabled = !Editor.canUndo();
     els.redoBtn.disabled = !Editor.canRedo();
+  }
+
+  /* ---------------- stage ---------------- */
+  function syncSize() {
+    const c = S().canvas;
+    els.canvasSizeSelect.value = c.width + 'x' + c.height;
+    const text = els.sizeSelectText;
+    if (text) {
+      const label = c.width + 'x' + c.height;
+      text.textContent = label === '1080x1080' ? 'Square' : label === '1080x1920' ? 'Story' : 'Portrait';
+    }
+  }
+  function syncZoomLabel() {
+    const z = Editor.getViewZoom();
+    els.zoomPct.textContent = Math.abs(z - 1) < 0.02 ? 'Fit' : Math.round(z * 100) + '%';
+  }
+  function bindStage() {
+    els.zoomOutBtn.addEventListener('click', function () {
+      Editor.setViewZoom(Editor.getViewZoom() * 0.85);
+      syncZoomLabel();
+    });
+    els.zoomInBtn.addEventListener('click', function () {
+      Editor.setViewZoom(Editor.getViewZoom() * 1.18);
+      syncZoomLabel();
+    });
   }
 
   /* ---------------- modals ---------------- */
@@ -638,7 +1096,8 @@
         Export.setQuality(b.dataset.quality);
       });
     });
-    els.expDownloadBtn.addEventListener('click', function () { Export.download(); });
+    els.expDownloadBtn.addEventListener('click', function () { Export.downloadCurrent(); });
+    els.expAllBtn.addEventListener('click', function () { Export.downloadAll(); });
 
     document.querySelectorAll('.js-open-shortcuts').forEach(function (b) {
       b.addEventListener('click', function () { openModalEl($('modal-shortcuts')); });
@@ -664,17 +1123,27 @@
         closeSheet();
         return;
       }
-      if ((e.key === 'Delete' || e.key === 'Backspace') && !isTyping && e.target === document.body) {
-        const L = Editor.getActiveLayer();
-        if (L && L.text) {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && !isTyping) {
+        const i = S().activeElement;
+        if (i >= 0) {
           e.preventDefault();
-          Editor.commit();
-          L.text = '';
-          if (S().activeText === 'title') els.titleInput.value = '';
-          else els.subtitleInput.value = '';
-          Editor.render();
-          syncText();
-          showToast('Text removed');
+          Editor.deleteElement(i);
+          syncElements();
+          showToast('Element removed');
+          return;
+        }
+        if (e.target === document.body) {
+          const L = Editor.getActiveLayer();
+          if (L && L.text) {
+            e.preventDefault();
+            Editor.commit();
+            L.text = '';
+            if (S().activeText === 'title') els.titleInput.value = '';
+            else els.subtitleInput.value = '';
+            Editor.render();
+            syncText();
+            showToast('Text removed');
+          }
         }
       }
     });
@@ -686,7 +1155,8 @@
     else if (type === 'sync') { syncAll(); }
     else if (type === 'activeText') { syncText(); }
     else if (type === 'activeTab') { syncTab(); }
-    else if (type === 'template') { syncTemplates(); }
+    else if (type === 'template') { syncTemplates(); syncDesign(); syncText(); }
+    else if (type === 'element') { syncElements(); }
     else if (type === 'history') { syncHistory(); }
   }
 
@@ -694,12 +1164,14 @@
     syncEmpty();
     syncImage();
     syncText();
-    syncAdjust();
+    syncDesign();
+    syncElements();
     syncTemplates();
     syncHistory();
     syncTab();
     syncSize();
     syncZoomLabel();
+    syncBrand();
   }
 
   /* ---------------- init ---------------- */
@@ -708,19 +1180,19 @@
     els.fileInput = $('fileInput');
     els.dropzone = $('dropzone');
     els.emptyUploadBtn = $('emptyUploadBtn');
+    els.emptySampleBtn = $('emptySampleBtn');
     els.editUploadBtn = $('editUploadBtn');
+    els.sampleBtn = $('sampleBtn');
     els.imgStatus = $('imgStatus');
     els.templateCats = $('templateCats');
     els.templateGrid = $('templateGrid');
-    els.panelTemplates = $('panel-templates');
-    els.sidebarLeft = document.querySelector('.sidebar-left');
+    els.panelContainer = document.querySelector('.panels');
     els.sheet = $('bottomSheet');
     els.sheetBody = $('sheetBody');
     els.sheetTitle = $('sheetTitle');
     els.sheetClose = $('sheetClose');
-    els.topTabs = document.querySelector('.tb-nav');
-    els.mTools = Array.prototype.slice.call(document.querySelectorAll('.m-tool'));
     els.canvasSizeSelect = $('canvasSizeSelect');
+    els.sizeSelectText = $('sizeSelectText');
     els.zoomOutBtn = $('zoomOutBtn');
     els.zoomInBtn = $('zoomInBtn');
     els.zoomPct = $('zoomPct');
@@ -729,6 +1201,21 @@
     els.redoBtn = $('redoBtn');
     els.resetBtn = $('resetBtn');
     els.exportBtn = $('exportBtn');
+    els.bgColorInput = $('bgColorInput');
+    els.bgSwatches = $('bgSwatches');
+    els.ovSeg = $('ovSeg');
+    els.ovRange = $('ovRange');
+    els.ovVal = $('ovVal');
+    els.vigRange = $('vigRange');
+    els.vigVal = $('vigVal');
+    els.blurRange = $('blurRange');
+    els.blurVal = $('blurVal');
+    els.accentLineToggle = $('accentLineToggle');
+    els.pillToggle = $('pillToggle');
+    els.filmToggle = $('filmToggle');
+    els.grainToggle = $('grainToggle');
+    els.pillTextInput = $('pillTextInput');
+    els.browseTplBtn = $('browseTplBtn');
     els.zoomRange = $('zoomRange');
     els.zoomVal = $('zoomVal');
     els.zoomMinusBtn = $('zoomMinusBtn');
@@ -750,27 +1237,59 @@
     els.lhRange = $('lhRange');
     els.lhVal = $('lhVal');
     els.caseSelect = $('caseSelect');
-    els.alignSeg = document.querySelector('.seg[data-align-container]') || document.querySelector('#panel-text .seg');
+    els.alignSeg = $('alignSeg');
     els.colorInput = $('colorInput');
     els.colorResetBtn = $('colorResetBtn');
     els.opacityRange = $('opacityRange');
     els.opacityVal = $('opacityVal');
-    els.posGrid = document.querySelector('.pos-grid');
+    els.gradToggle = $('gradToggle');
+    els.gradGroup = $('gradGroup');
+    els.gradColor1 = $('gradColor1');
+    els.gradColor2 = $('gradColor2');
+    els.gradAngle = $('gradAngle');
+    els.gradAngleVal = $('gradAngleVal');
+    els.shadowToggle = $('shadowToggle');
+    els.shadowGroup = $('shadowGroup');
+    els.shadowColor = $('shadowColor');
+    els.shadowBlur = $('shadowBlur');
+    els.shadowBlurVal = $('shadowBlurVal');
+    els.shadowX = $('shadowX');
+    els.shadowXVal = $('shadowXVal');
+    els.shadowY = $('shadowY');
+    els.shadowYVal = $('shadowYVal');
+    els.outlineToggle = $('outlineToggle');
+    els.outlineGroup = $('outlineGroup');
+    els.outlineColor = $('outlineColor');
+    els.outlineWidth = $('outlineWidth');
+    els.outlineWidthVal = $('outlineWidthVal');
+    els.posGrid = $('posGrid');
     els.posBtns = Array.prototype.slice.call(document.querySelectorAll('.pos-btn'));
     els.ideasInput = $('ideasInput');
     els.ideasBtn = $('ideasBtn');
     els.ideasList = $('ideasList');
-    els.ovSeg = document.querySelector('#panel-adjust .seg');
-    els.ovRange = $('ovRange');
-    els.ovVal = $('ovVal');
-    els.vigRange = $('vigRange');
-    els.vigVal = $('vigVal');
-    els.blurRange = $('blurRange');
-    els.blurVal = $('blurVal');
-    els.doodleToggle = $('doodleToggle');
-    els.filmToggle = $('filmToggle');
-    els.grainToggle = $('grainToggle');
+    els.elPalette = $('elPalette');
+    els.elList = $('elList');
+    els.elControls = $('elControls');
+    els.elScale = $('elScale');
+    els.elScaleVal = $('elScaleVal');
+    els.elRot = $('elRot');
+    els.elRotVal = $('elRotVal');
+    els.elOpacity = $('elOpacity');
+    els.elOpacityVal = $('elOpacityVal');
+    els.elColor = $('elColor');
+    els.elDeleteBtn = $('elDeleteBtn');
+    els.elDupBtn = $('elDupBtn');
+    els.elFrontBtn = $('elFrontBtn');
+    els.brandName = $('brandName');
+    els.brandSaveBtn = $('brandSaveBtn');
+    els.brandList = $('brandList');
+    els.brandSwatch = $('brandSwatch');
+    els.brandTitleColor = $('brandTitleColor');
+    els.brandSubColor = $('brandSubColor');
+    els.brandTitleFont = $('brandTitleFont');
+    els.brandSubFont = $('brandSubFont');
     els.expDownloadBtn = $('expDownloadBtn');
+    els.expAllBtn = $('expAllBtn');
   }
 
   function bindTopbar() {
@@ -785,12 +1304,12 @@
     els.sheetClose.addEventListener('click', closeSheet);
   }
 
-  function bindTabs() {
-    document.querySelectorAll('.tb-tab').forEach(function (b) {
+  function bindRail() {
+    document.querySelectorAll('.tb-tab[data-tab], .rail-btn[data-tab]').forEach(function (b) {
       b.addEventListener('click', function () { selectTab(b.dataset.tab); });
     });
-    document.querySelectorAll('.m-tool').forEach(function (b) {
-      b.addEventListener('click', function () { onMobileTool(b.dataset.mtool); });
+    document.querySelectorAll('.m-tool[data-mtool]').forEach(function (b) {
+      b.addEventListener('click', function () { selectTab(b.dataset.mtool); });
     });
   }
 
@@ -799,13 +1318,15 @@
     applyTheme(!!Storage.get('darkMode'));
     bindTheme();
     bindTopbar();
-    bindTabs();
+    bindRail();
     bindUpload();
     bindTemplates();
     bindStage();
+    bindDesignPanel();
     bindImagePanel();
     bindTextPanel();
-    bindAdjustPanel();
+    bindElementsPanel();
+    bindBrandPanel();
     bindModals();
     bindKeyboard();
     Editor.subscribe(onNotify);
@@ -817,6 +1338,7 @@
     init: init,
     showToast: showToast,
     applyTheme: applyTheme,
-    closeSheet: closeSheet
+    closeSheet: closeSheet,
+    openSheet: openSheet
   };
 })(window);
