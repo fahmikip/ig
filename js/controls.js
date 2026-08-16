@@ -111,6 +111,10 @@
       });
       els.sheetBody.appendChild(panel);
     }
+    PANELS.forEach(function (p) {
+      const el = $('panel-' + p);
+      if (el) el.classList.toggle('is-visible', el === panel);
+    });
     const titles = {
       templates: 'Templates', design: 'Design', image: 'Image',
       text: 'Text', elements: 'Elements', brand: 'Brand Kit'
