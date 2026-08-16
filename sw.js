@@ -1,6 +1,6 @@
 /* Coverly service worker — optional offline caching.
    Uses relative paths so it works on GitHub Pages sub-paths. */
-const CACHE = 'coverly-v1';
+const CACHE = 'coverly-v2';
 
 self.addEventListener('install', function (event) {
   event.waitUntil(
@@ -33,9 +33,10 @@ self.addEventListener('activate', function (event) {
         keys.filter(function (k) { return k !== CACHE; })
           .map(function (k) { return caches.delete(k); })
       );
+    }).then(function () {
+      return self.clients.claim();
     })
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', function (event) {
