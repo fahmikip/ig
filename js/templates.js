@@ -32,7 +32,8 @@
     { id: 'product', name: 'Product' },
     { id: 'promo', name: 'Promo' },
     { id: 'typography', name: 'Typography' },
-    { id: 'special', name: 'Special' }
+    { id: 'special', name: 'Special' },
+    { id: 'official', name: 'Government' }
   ];
 
   /* ---------------- templates ---------------- */
@@ -275,6 +276,123 @@
       title: { font: 'Poppins', size: 104, weight: 700, letterSpacing: 0, lineHeight: 1.1, align: 'center', color: '#FFFFFF', opacity: 1, case: 'none', x: 0.5, y: 0.22, shadow: { enabled: true, color: 'rgba(0,0,0,0.5)', blur: 28, offsetX: 0, offsetY: 5 } },
       subtitle: { font: 'Inter', size: 26, weight: 500, letterSpacing: 3, lineHeight: 1.6, align: 'center', color: '#FFD166', opacity: 1, case: 'uppercase', x: 0.5, y: 0.35 },
       sample: { title: 'Happy Birthday', subtitle: 'CELEBRATING YOU TODAY' }
+    },
+
+    /* ---------- GOVERNMENT / OFFICIAL ---------- */
+    {
+      id: 'government-official', name: 'Official Service', category: 'official',
+      bg: '#0E2440', overlay: { type: 'dark', opacity: 0.22, vignette: 0.42, blur: 0, tint: null, tintAlpha: 0 },
+      decor: {},
+      title: { font: 'Montserrat', size: 102, weight: 700, letterSpacing: 1, lineHeight: 1.08, align: 'left', color: '#FFFFFF', opacity: 1, case: 'uppercase', x: 0.08, y: 0.2, shadow: { enabled: true, color: 'rgba(0,0,0,0.5)', blur: 28, offsetX: 0, offsetY: 5 } },
+      subtitle: { font: 'Inter', size: 26, weight: 500, letterSpacing: 3, lineHeight: 1.6, align: 'left', color: 'rgba(255,255,255,0.78)', opacity: 1, case: 'uppercase', x: 0.08, y: 0.35 },
+      elements: [
+        { type: 'badge', text: 'RESMI', x: 0.12, y: 0.07, scale: 0.9, rotation: 0, color: '#C9A227', opacity: 1 },
+        { type: 'shape', shape: 'frame', x: 0.9, y: 0.9, scale: 0.5, rotation: 0, color: '#C9A227', opacity: 0.85 }
+      ],
+      sample: { title: 'Layanan Publik', subtitle: 'PELAYANAN PRIMA · MUDAH · CEPAT · TERPERCAYA' }
+    },
+    {
+      id: 'government-announcement', name: 'Official Notice', category: 'official',
+      bg: '#A51C24', overlay: { type: 'dark', opacity: 0.18, vignette: 0.4, blur: 0, tint: null, tintAlpha: 0 },
+      decor: {},
+      title: { font: 'Playfair Display', size: 96, weight: 600, letterSpacing: 0, lineHeight: 1.15, align: 'left', color: '#FFFFFF', opacity: 1, case: 'none', x: 0.08, y: 0.2, shadow: { enabled: true, color: 'rgba(0,0,0,0.4)', blur: 24, offsetX: 0, offsetY: 4 } },
+      subtitle: { font: 'Montserrat', size: 25, weight: 600, letterSpacing: 3, lineHeight: 1.6, align: 'left', color: 'rgba(255,255,255,0.88)', opacity: 1, case: 'uppercase', x: 0.08, y: 0.34 },
+      elements: [
+        { type: 'badge', text: 'PENGUMUMAN', x: 0.12, y: 0.07, scale: 0.78, rotation: 0, color: '#C9A227', opacity: 1 }
+      ],
+      sample: { title: 'Perhatian warga', subtitle: 'PENGUMUMAN RESMI — MOHON DIBACA DENGAN SEKSAMA' }
+    },
+    {
+      id: 'government-program', name: 'Public Program', category: 'official',
+      bg: '#F6F3EC', overlay: { type: 'none', opacity: 0, vignette: 0.08, blur: 0, tint: null, tintAlpha: 0 },
+      decor: {},
+      title: { font: 'Montserrat', size: 94, weight: 700, letterSpacing: 0, lineHeight: 1.1, align: 'left', color: '#0F2440', opacity: 1, case: 'uppercase', x: 0.08, y: 0.18 },
+      subtitle: { font: 'Inter', size: 24, weight: 500, letterSpacing: 3, lineHeight: 1.6, align: 'left', color: '#5A6472', opacity: 1, case: 'uppercase', x: 0.08, y: 0.32 },
+      elements: [
+        { type: 'badge', text: 'PROGRAM', x: 0.12, y: 0.06, scale: 0.85, rotation: 0, color: '#12314E', opacity: 1 },
+        { type: 'shape', shape: 'circle', x: 0.92, y: 0.1, scale: 0.1, rotation: 0, color: '#C9A227', opacity: 0.9 }
+      ],
+      sample: { title: 'Program Bantuan', subtitle: 'SASARAN · SYARAT · JADWAL PENDAFTARAN' }
+    },
+    {
+      id: 'government-schedule', name: 'Service Hours', category: 'official',
+      bg: '#0F2A3E', overlay: { type: 'dark', opacity: 0.25, vignette: 0.45, blur: 0, tint: null, tintAlpha: 0 },
+      decor: {},
+      title: { font: 'Oswald', size: 130, weight: 600, letterSpacing: 2, lineHeight: 1.02, align: 'center', color: '#FFFFFF', opacity: 1, case: 'none', x: 0.5, y: 0.3, shadow: { enabled: true, color: 'rgba(0,0,0,0.5)', blur: 30, offsetX: 0, offsetY: 6 } },
+      subtitle: { font: 'Montserrat', size: 26, weight: 600, letterSpacing: 5, lineHeight: 1.6, align: 'center', color: '#C9A227', opacity: 1, case: 'uppercase', x: 0.5, y: 0.5 },
+      elements: [
+        { type: 'badge', text: 'JADWAL', x: 0.5, y: 0.08, scale: 0.9, rotation: 0, color: '#C9A227', opacity: 1 }
+      ],
+      sample: { title: '08.00 – 16.00', subtitle: 'JAM PELAYANAN · SENIN – JUMAT' }
+    },
+    {
+      id: 'government-report', name: 'Public Report', category: 'official',
+      bg: '#123D2E', overlay: { type: 'dark', opacity: 0.2, vignette: 0.42, blur: 0, tint: null, tintAlpha: 0 },
+      decor: {},
+      title: { font: 'Playfair Display', size: 104, weight: 500, letterSpacing: 0, lineHeight: 1.1, align: 'left', color: '#F3EFE4', opacity: 1, case: 'none', x: 0.08, y: 0.2 },
+      subtitle: { font: 'Inter', size: 24, weight: 500, letterSpacing: 3, lineHeight: 1.6, align: 'left', color: 'rgba(243,239,228,0.72)', opacity: 1, case: 'uppercase', x: 0.08, y: 0.34 },
+      elements: [
+        { type: 'badge', text: 'LAPORAN', x: 0.12, y: 0.07, scale: 0.85, rotation: 0, color: '#C9A227', opacity: 1 }
+      ],
+      sample: { title: 'Laporan Publik', subtitle: 'TAHUN 2026 · TRANSPARANSI & AKUNTABILITAS' }
+    },
+    {
+      id: 'government-education', name: 'Public Education', category: 'official',
+      bg: '#FBFBF7', overlay: { type: 'none', opacity: 0, vignette: 0.05, blur: 0, tint: null, tintAlpha: 0 },
+      decor: {},
+      title: { font: 'Montserrat', size: 90, weight: 700, letterSpacing: 0, lineHeight: 1.15, align: 'center', color: '#0F2440', opacity: 1, case: 'none', x: 0.5, y: 0.22 },
+      subtitle: { font: 'Inter', size: 24, weight: 500, letterSpacing: 4, lineHeight: 1.6, align: 'center', color: '#4A5568', opacity: 1, case: 'uppercase', x: 0.5, y: 0.37 },
+      elements: [
+        { type: 'badge', text: 'INFO PUBLIK', x: 0.5, y: 0.07, scale: 0.85, rotation: 0, color: '#0F2440', opacity: 1 }
+      ],
+      sample: { title: 'Cegah, Kenali, Tangani', subtitle: 'SOSIALISASI & EDUKASI PUBLIK' }
+    },
+    {
+      id: 'government-emergency', name: 'Important Notice', category: 'official',
+      bg: '#C62828', overlay: { type: 'dark', opacity: 0.15, vignette: 0.38, blur: 0, tint: null, tintAlpha: 0 },
+      decor: {},
+      title: { font: 'Oswald', size: 120, weight: 700, letterSpacing: 3, lineHeight: 1, align: 'left', color: '#FFFFFF', opacity: 1, case: 'uppercase', x: 0.08, y: 0.2, shadow: { enabled: true, color: 'rgba(0,0,0,0.45)', blur: 26, offsetX: 0, offsetY: 5 } },
+      subtitle: { font: 'Inter', size: 26, weight: 600, letterSpacing: 2, lineHeight: 1.6, align: 'left', color: 'rgba(255,255,255,0.92)', opacity: 1, case: 'uppercase', x: 0.08, y: 0.35 },
+      elements: [
+        { type: 'badge', text: 'PERHATIAN', x: 0.12, y: 0.07, scale: 0.85, rotation: 0, color: '#1A1A1A', opacity: 1 }
+      ],
+      sample: { title: 'Info Penting', subtitle: 'JADWAL GILIRAN PETUGAS · 1–7 SEPTEMBER 2026' }
+    },
+    {
+      id: 'government-events', name: 'Official Event', category: 'official',
+      bg: '#101A2C', overlay: { type: 'dark', opacity: 0.22, vignette: 0.42, blur: 0, tint: null, tintAlpha: 0 },
+      decor: {},
+      title: { font: 'Playfair Display', size: 100, weight: 500, letterSpacing: 0, lineHeight: 1.15, align: 'left', color: '#F5F1E8', opacity: 1, case: 'none', x: 0.08, y: 0.2 },
+      subtitle: { font: 'Montserrat', size: 25, weight: 600, letterSpacing: 4, lineHeight: 1.6, align: 'left', color: '#C9A227', opacity: 1, case: 'uppercase', x: 0.08, y: 0.35 },
+      elements: [
+        { type: 'badge', text: 'ACARA RESMI', x: 0.12, y: 0.07, scale: 0.78, rotation: 0, color: '#C9A227', opacity: 1 },
+        { type: 'shape', shape: 'frame', x: 0.9, y: 0.1, scale: 0.45, rotation: 0, color: '#C9A227', opacity: 0.9 }
+      ],
+      sample: { title: 'Selamat Datang', subtitle: 'ACARA RESMI · UPACARA PERINGATAN' }
+    },
+    {
+      id: 'government-contact', name: 'Service Contact', category: 'official',
+      bg: '#FFFFFF', overlay: { type: 'none', opacity: 0, vignette: 0, blur: 0, tint: null, tintAlpha: 0 },
+      decor: {},
+      title: { font: 'Montserrat', size: 90, weight: 700, letterSpacing: 0, lineHeight: 1.12, align: 'left', color: '#101A2C', opacity: 1, case: 'none', x: 0.08, y: 0.22 },
+      subtitle: { font: 'Inter', size: 27, weight: 400, letterSpacing: 0, lineHeight: 1.7, align: 'left', color: '#4A5568', opacity: 1, case: 'none', x: 0.08, y: 0.37 },
+      elements: [
+        { type: 'badge', text: 'KONTAK', x: 0.12, y: 0.07, scale: 0.85, rotation: 0, color: '#12314E', opacity: 1 },
+        { type: 'shape', shape: 'circle', x: 0.92, y: 0.1, scale: 0.1, rotation: 0, color: '#C9A227', opacity: 0.9 }
+      ],
+      sample: { title: 'Hubungi Kami', subtitle: 'Call center 1500-XXX · halo@lembaga.go.id' }
+    },
+    {
+      id: 'government-policy', name: 'Policy & Regulation', category: 'official',
+      bg: '#0B1B2B', overlay: { type: 'dark', opacity: 0.25, vignette: 0.42, blur: 0, tint: null, tintAlpha: 0 },
+      decor: {},
+      title: { font: 'Montserrat', size: 82, weight: 700, letterSpacing: 2, lineHeight: 1.12, align: 'center', color: '#FFFFFF', opacity: 1, case: 'uppercase', x: 0.5, y: 0.24 },
+      subtitle: { font: 'Inter', size: 25, weight: 500, letterSpacing: 4, lineHeight: 1.6, align: 'center', color: 'rgba(255,255,255,0.78)', opacity: 1, case: 'uppercase', x: 0.5, y: 0.4 },
+      elements: [
+        { type: 'badge', text: 'REGULASI', x: 0.5, y: 0.07, scale: 0.85, rotation: 0, color: '#C9A227', opacity: 1 },
+        { type: 'shape', shape: 'frame', x: 0.5, y: 0.93, scale: 0.5, rotation: 0, color: '#C9A227', opacity: 0.8 }
+      ],
+      sample: { title: 'Ketentuan Layanan', subtitle: 'KEBIJAKAN PRIVASI · SYARAT & KETENTUAN' }
     }
   ];
 
@@ -309,6 +427,14 @@
     };
   }
 
+  function cloneElement(E) {
+    return {
+      type: E.type, emoji: E.emoji || null, shape: E.shape || null, text: E.text || null,
+      x: E.x, y: E.y, scale: E.scale, rotation: E.rotation || 0,
+      color: E.color, opacity: E.opacity != null ? E.opacity : 1
+    };
+  }
+
   /* Apply a template onto the state (keeps user's typed text if any) */
   function applyTemplateToState(state, id) {
     const tpl = getTemplate(id);
@@ -324,7 +450,7 @@
     S.subtitle = cloneLayer(tpl.subtitle);
     S.title.text = oldTitle || tpl.sample.title;
     S.subtitle.text = oldSub || tpl.sample.subtitle;
-    S.elements = [];
+    S.elements = (tpl.elements || []).map(cloneElement);
     S.activeElement = -1;
     return true;
   }

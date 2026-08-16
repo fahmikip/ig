@@ -1,7 +1,7 @@
 {
   "name": "Coverly — Instagram Cover Generator",
   "short_name": "Coverly",
-  "description": "Design professional Instagram covers with 28 ready-to-use templates, brand kits, stickers, text effects and full-size batch export. 100% in your browser.",
+  "description": "Design professional Instagram covers with 38 ready-to-use templates, brand kits, stickers, text effects and full-size batch export. 100% in your browser.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

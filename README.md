@@ -10,7 +10,7 @@ Coverly is a fast, modern and premium **Instagram cover generator** that runs en
 
 ## ✨ Features
 
-- **28 premium templates** — Cinematic, Travel, Street, Minimal, Editorial, Quote, Product, Fashion, Music, Fitness, Birthday & more, across 8 categories. Each with its own distinct typography and color palette.
+- **38 premium templates** — Cinematic, Travel, Street, Minimal, Editorial, Quote, Product, Fashion, Music, Fitness, Birthday, Government & more, across 9 categories. Each with its own distinct typography and color palette.
 - **Real-time canvas editor** — drag, zoom, rotate and reposition your photo with mouse, touch or trackpad (including pinch-to-zoom).
 - **Full text control** — 8 fonts, size, weight, letter-spacing, line-height, case, color, opacity, alignment and 9 position presets. Drag text anywhere on the canvas.
 - **Text effects** — gradient fills, soft shadows and outlines, each fully customizable.
@@ -49,7 +49,7 @@ Coverly is a fast, modern and premium **Instagram cover generator** that runs en
 │   ├── app.js          # Init, view switching, PWA
 │   ├── editor.js       # State, history, canvas interactions
 │   ├── canvas.js       # Rendering pipeline
-│   ├── templates.js    # 28 templates + title ideas
+│   ├── templates.js    # 38 templates + title ideas
 │   ├── controls.js     # UI bindings, modals, keyboard
 │   ├── export.js       # PNG/JPG export
 │   └── storage.js      # localStorage wrapper
