@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Coverly — Instagram Cover Generator</title>
+  <meta name="description" content="Create beautiful Instagram covers directly in your browser. Free, fast and private." />
+  <meta name="theme-color" content="#0f0f0f" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Coverly — Instagram Cover Generator" />
+  <meta property="og:description" content="Create cinematic, clean and professional Instagram covers directly in your browser. 100% free and private." />
+  <meta property="og:site_name" content="Coverly" />
+  <meta property="og:image" content="assets/icons/icon-512.png" />
+
+  <link rel="icon" type="image/svg+xml" href="assets/icons/icon.svg" />
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Poppins:wght@400;600;700&family=Montserrat:wght@500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+</head>
+<body>
+
+  <!-- ============ ICON SPRITE (inline, dependency-free) ============ -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+    <symbol id="i-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 17v-6.5"/><path d="M8 12.5c0-1.5 1.5-2.5 3-2.5s3 1 3 2.5V17"/><circle cx="16.5" cy="9.5" r="1" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></symbol>
+    <symbol id="i-redo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 15-6.7L21 13"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></symbol>
+    <symbol id="i-sparkles" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8a2 2 0 0 0 1.27 1.27L21 12l-5.83 1.93a2 2 0 0 0-1.27 1.27L12 21l-1.9-5.83a2 2 0 0 0-1.27-1.27L3 12l5.83-1.9a2 2 0 0 0 1.27-1.27L12 3z"/><path d="M18.5 3.5v3M17 5h3"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></symbol>
+    <symbol id="i-type" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></symbol>
+    <symbol id="i-wand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8 19 13"/><path d="M17.8 6.2 19 5"/><path d="M3 21l9-9"/><path d="M12.2 6.2 11 5"/></symbol>
+    <symbol id="i-move" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></symbol>
+    <symbol id="i-keyboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M18 13h.01M6 17h.01M10 17h.01M14 17h.01M18 17h.01M9 13h6"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></symbol>
+    <symbol id="i-align-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/></symbol>
+    <symbol id="i-align-center" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="17" y1="12" x2="7" y2="12"/><line x1="19" y1="18" x2="5" y2="18"/></symbol>
+    <symbol id="i-align-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="7" y2="18"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></symbol>
+    <symbol id="i-maximize" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+    <symbol id="i-palette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 1 9-9c0 1.66-1.34 3-3 3h-2.5a2.5 2.5 0 0 0-2.5 2.5c0 .9.4 1.6 1 2.1.6.5.9 1.1.9 1.4z"/><circle cx="7.5" cy="10.5" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16.5" cy="10.5" r="1"/></symbol>
+    <symbol id="i-film" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></symbol>
+    <symbol id="i-loader" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></symbol>
+    <symbol id="i-zoom-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></symbol>
+  </svg>
+
+  <!-- ===================== LANDING PAGE ===================== -->
+  <div id="view-landing" class="landing">
+    <header class="site-nav">
+      <a class="brand" href="#top" aria-label="Coverly home">
+        <svg class="brand-mark"><use href="#i-logo"/></svg>
+        <span class="brand-name">COVERLY</span>
+      </a>
+      <nav class="site-nav-links" aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#templates">Templates</a>
+        <a href="#how">How it works</a>
+      </nav>
+      <div class="site-nav-actions">
+        <button class="icon-btn js-dark-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+          <svg class="icon icon-sun"><use href="#i-sun"/></svg>
+          <svg class="icon icon-moon"><use href="#i-moon"/></svg>
+        </button>
+        <button class="btn btn-primary js-open-editor" type="button">Create Cover</button>
+      </div>
+    </header>
+
+    <main id="top">
+      <!-- HERO -->
+      <section class="hero">
+        <div class="hero-glow" aria-hidden="true"></div>
+        <div class="hero-inner">
+          <div class="hero-copy">
+            <span class="badge">
+              <svg class="icon"><use href="#i-zap"/></svg>
+              100% FREE <span class="dot">•</span> BROWSER BASED
+            </span>
+            <h1 class="hero-title">Create Instagram Covers That <em>Stand Out.</em></h1>
+            <p class="hero-sub">
+              Design cinematic, clean and professional Instagram covers directly in your browser.
+              No sign-up. No upload. Just your creativity.
+            </p>
+            <div class="hero-cta">
+              <button class="btn btn-primary btn-lg js-open-editor" type="button">
+                Create Cover
+                <svg class="icon"><use href="#i-arrow-right"/></svg>
+              </button>
+              <a class="btn btn-ghost btn-lg" href="#templates">Explore Templates</a>
+            </div>
+            <ul class="hero-proof" aria-label="Key benefits">
+              <li><svg class="icon"><use href="#i-lock"/></svg>100% private</li>
+              <li><svg class="icon"><use href="#i-upload"/></svg>No upload</li>
+              <li><svg class="icon"><use href="#i-download"/></svg>HD export</li>
+            </ul>
+          </div>
+
+          <div class="hero-visual" aria-hidden="true">
+            <div class="mockup">
+              <div class="mockup-frame">
+                <canvas id="heroCanvas" width="540" height="675"></canvas>
+                <div class="mockup-chip mockup-chip--1">CINEMATIC</div>
+                <div class="mockup-chip mockup-chip--2">1080 × 1350</div>
+                <div class="mockup-chip mockup-chip--3">4.9 ★</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FEATURES -->
+      <section class="section" id="features">
+        <div class="section-head">
+          <span class="section-kicker">Why Coverly</span>
+          <h2 class="section-title">Everything you need. Nothing you don't.</h2>
+        </div>
+        <div class="features-grid">
+          <article class="feature-card">
+            <span class="feature-icon"><svg class="icon"><use href="#i-wand"/></svg></span>
+            <h3>12 premium templates</h3>
+            <p>Cinematic, editorial, analog and more — each with a distinct personality, tuned for Instagram.</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-icon"><svg class="icon"><use href="#i-type"/></svg></span>
+            <h3>Full text control</h3>
+            <p>Fonts, size, spacing, weight and position presets. Drag any text exactly where you want it.</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-icon"><svg class="icon"><use href="#i-move"/></svg></span>
+            <h3>Drag, zoom, rotate</h3>
+            <p>Move, scale and rotate your photo with pointer, touch or trackpad. Real-time preview.</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-icon"><svg class="icon"><use href="#i-layers"/></svg></span>
+            <h3>Overlays &amp; effects</h3>
+            <p>Dark and light overlays, gradients, vignette, blur, film grain and hand-drawn doodles.</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-icon"><svg class="icon"><use href="#i-sparkles"/></svg></span>
+            <h3>Smart title ideas</h3>
+            <p>Type a theme and get headline ideas generated locally. No AI, no API — instant.</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-icon"><svg class="icon"><use href="#i-shield"/></svg></span>
+            <h3>Private by design</h3>
+            <p>Everything runs in your browser. Photos never leave your device. Nothing is stored online.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- TEMPLATES SHOWCASE -->
+      <section class="section" id="templates">
+        <div class="section-head">
+          <span class="section-kicker">Templates</span>
+          <h2 class="section-title">Start with a look.</h2>
+          <p class="section-sub">Four sample directions. Twelve total inside the editor.</p>
+        </div>
+        <div class="tpl-showcase">
+          <button class="tpl-card js-apply-sample" data-sample="cinematic-dark" type="button">
+            <div class="tpl-preview"><canvas data-sample-canvas="cinematic-dark"></canvas></div>
+            <div class="tpl-meta">
+              <span class="tpl-name">CINEMATIC</span>
+              <span class="tpl-tagline">"The Road Home"</span>
+            </div>
+          </button>
+          <button class="tpl-card js-apply-sample" data-sample="travel-journal" type="button">
+            <div class="tpl-preview"><canvas data-sample-canvas="travel-journal"></canvas></div>
+            <div class="tpl-meta">
+              <span class="tpl-name">TRAVEL</span>
+              <span class="tpl-tagline">"Escape The Ordinary"</span>
+            </div>
+          </button>
+          <button class="tpl-card js-apply-sample" data-sample="street-night" type="button">
+            <div class="tpl-preview"><canvas data-sample-canvas="street-night"></canvas></div>
+            <div class="tpl-meta">
+              <span class="tpl-name">STREET</span>
+              <span class="tpl-tagline">"City After Dark"</span>
+            </div>
+          </button>
+          <button class="tpl-card js-apply-sample" data-sample="editorial" type="button">
+            <div class="tpl-preview"><canvas data-sample-canvas="editorial"></canvas></div>
+            <div class="tpl-meta">
+              <span class="tpl-name">EDITORIAL</span>
+              <span class="tpl-tagline">"Less, But Better"</span>
+            </div>
+          </button>
+        </div>
+      </section>
+
+      <!-- HOW IT WORKS -->
+      <section class="section" id="how">
+        <div class="section-head">
+          <span class="section-kicker">How it works</span>
+          <h2 class="section-title">From photo to cover in three steps.</h2>
+        </div>
+        <div class="steps">
+          <article class="step">
+            <span class="step-num">01</span>
+            <h3>Upload</h3>
+            <p>Drop any JPG, PNG or WebP image. It stays on your device.</p>
+          </article>
+          <article class="step">
+            <span class="step-num">02</span>
+            <h3>Design</h3>
+            <p>Pick a template, refine the text, move the photo, tune the mood.</p>
+          </article>
+          <article class="step">
+            <span class="step-num">03</span>
+            <h3>Export</h3>
+            <p>Download a crisp PNG or JPG — ready for your grid.</p>
+          </article>
+        </div>
+        <div class="section-cta">
+          <button class="btn btn-primary btn-lg js-open-editor" type="button">
+            Create Cover
+            <svg class="icon"><use href="#i-arrow-right"/></svg>
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-brand">
+        <a class="brand" href="#top" aria-label="Coverly home">
+          <svg class="brand-mark"><use href="#i-logo"/></svg>
+          <span class="brand-name">COVERLY</span>
+        </a>
+        <p class="footer-tagline">Create covers that get noticed.</p>
+      </div>
+      <div class="footer-links">
+        <button class="footer-link js-open-shortcuts" type="button">Keyboard shortcuts</button>
+        <button class="footer-link js-open-about" type="button">About</button>
+        <a class="footer-link" href="https://github.com/" target="_blank" rel="noopener">
+          <svg class="icon"><use href="#i-github"/></svg> GitHub Pages ready
+        </a>
+      </div>
+      <p class="footer-note">Built with vanilla HTML, CSS &amp; JavaScript — no backend, no tracking.</p>
+    </footer>
+  </div>
+
+  <!-- ===================== EDITOR ===================== -->
+  <div id="view-editor" class="editor" hidden>
+    <header class="editor-topbar">
+      <div class="tb-left">
+        <button class="brand js-back-landing" type="button" aria-label="Back to home" title="Back to home">
+          <svg class="brand-mark"><use href="#i-logo"/></svg>
+          <span class="brand-name">COVERLY</span>
+        </button>
+      </div>
+
+      <nav class="tb-nav" aria-label="Editor tools">
+        <button class="tb-tab" type="button" data-tab="templates" aria-pressed="false">
+          <svg class="icon"><use href="#i-grid"/></svg><span>Templates</span>
+        </button>
+        <button class="tb-tab is-active" type="button" data-tab="edit" aria-pressed="true">
+          <svg class="icon"><use href="#i-move"/></svg><span>Edit</span>
+        </button>
+        <button class="tb-tab" type="button" data-tab="text" aria-pressed="false">
+          <svg class="icon"><use href="#i-type"/></svg><span>Text</span>
+        </button>
+        <button class="tb-tab" type="button" data-tab="adjust" aria-pressed="false">
+          <svg class="icon"><use href="#i-layers"/></svg><span>Adjust</span>
+        </button>
+      </nav>
+
+      <div class="tb-actions">
+        <button class="icon-btn" id="undoBtn" type="button" aria-label="Undo" title="Undo (Ctrl+Z)" data-tooltip="Undo">
+          <svg class="icon"><use href="#i-undo"/></svg>
+        </button>
+        <button class="icon-btn" id="redoBtn" type="button" aria-label="Redo" title="Redo (Ctrl+Shift+Z)" data-tooltip="Redo">
+          <svg class="icon"><use href="#i-redo"/></svg>
+        </button>
+        <button class="icon-btn" id="resetBtn" type="button" aria-label="Reset design" title="Reset design" data-tooltip="Reset">
+          <svg class="icon"><use href="#i-reset"/></svg>
+        </button>
+        <button class="icon-btn js-dark-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+          <svg class="icon icon-sun"><use href="#i-sun"/></svg>
+          <svg class="icon icon-moon"><use href="#i-moon"/></svg>
+        </button>
+        <button class="btn btn-primary btn-export" id="exportBtn" type="button">
+          <svg class="icon"><use href="#i-download"/></svg>
+          Export
+        </button>
+      </div>
+    </header>
+
+    <div class="editor-body">
+      <!-- LEFT SIDEBAR -->
+      <aside class="sidebar sidebar-left" aria-label="Upload and templates">
+        <!-- Upload -->
+        <section class="panel" id="panel-upload">
+          <h2 class="panel-title">
+            <svg class="icon"><use href="#i-upload"/></svg> Upload
+          </h2>
+          <button class="dropzone" id="dropzone" type="button">
+            <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" hidden />
+            <span class="dz-icon"><svg class="icon"><use href="#i-image"/></svg></span>
+            <strong>Upload Photo</strong>
+            <span class="dz-hint">Drop your image here</span>
+            <span class="dz-formats">JPG · PNG · WEBP</span>
+          </button>
+          <p class="dz-note" id="imgStatus">
+            <svg class="icon"><use href="#i-lock"/></svg>
+            Processed locally — never leaves your device.
+          </p>
+        </section>
+
+        <!-- Templates -->
+        <section class="panel" id="panel-templates">
+          <h2 class="panel-title">
+            <svg class="icon"><use href="#i-wand"/></svg> Templates
+          </h2>
+          <div class="tpl-cats" id="templateCats" role="tablist" aria-label="Template categories">
+            <button class="tpl-cat is-active" type="button" data-cat="all" role="tab" aria-selected="true">All</button>
+            <button class="tpl-cat" type="button" data-cat="cinematic" role="tab" aria-selected="false">Cinematic</button>
+            <button class="tpl-cat" type="button" data-cat="travel" role="tab" aria-selected="false">Travel</button>
+            <button class="tpl-cat" type="button" data-cat="street" role="tab" aria-selected="false">Street</button>
+            <button class="tpl-cat" type="button" data-cat="minimal" role="tab" aria-selected="false">Minimal</button>
+            <button class="tpl-cat" type="button" data-cat="editorial" role="tab" aria-selected="false">Editorial</button>
+            <button class="tpl-cat" type="button" data-cat="analog" role="tab" aria-selected="false">Analog</button>
+            <button class="tpl-cat" type="button" data-cat="quote" role="tab" aria-selected="false">Quote</button>
+            <button class="tpl-cat" type="button" data-cat="doodle" role="tab" aria-selected="false">Doodle</button>
+          </div>
+          <div class="tpl-grid" id="templateGrid" role="list"></div>
+        </section>
+      </aside>
+
+      <!-- CANVAS STAGE -->
+      <main class="canvas-stage" aria-label="Design canvas">
+        <div class="stage-toolbar">
+          <label class="size-select" for="canvasSizeSelect">
+            <span class="sr-only">Canvas size</span>
+            <svg class="icon"><use href="#i-maximize"/></svg>
+            <select id="canvasSizeSelect" aria-label="Canvas size">
+              <option value="1080x1350">Portrait · 1080 × 1350</option>
+              <option value="1080x1080">Square · 1080 × 1080</option>
+              <option value="1080x1920">Story · 1080 × 1920</option>
+            </select>
+          </label>
+          <div class="stage-zoom" role="group" aria-label="Canvas zoom">
+            <button class="icon-btn" id="zoomOutBtn" type="button" aria-label="Zoom out" title="Zoom out">
+              <svg class="icon"><use href="#i-minus"/></svg>
+            </button>
+            <span class="zoom-pct" id="zoomPct">Fit</span>
+            <button class="icon-btn" id="zoomInBtn" type="button" aria-label="Zoom in" title="Zoom in">
+              <svg class="icon"><use href="#i-plus"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="stage-scroll">
+          <div class="stage-frame">
+            <div class="canvas-empty" id="canvasEmpty">
+              <div class="empty-art" aria-hidden="true">
+                <svg viewBox="0 0 120 120" class="empty-svg">
+                  <circle cx="60" cy="60" r="46" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 5"/>
+                  <rect x="34" y="34" width="52" height="52" rx="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M42 70l10-10 8 8 12-14 8 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="46" cy="46" r="3.5" fill="currentColor"/>
+                  <path d="M96 20l1.2 3.6 3.6 1.2-3.6 1.2L96 29.6l-1.2-3.6-3.6-1.2 3.6-1.2z" fill="currentColor"/>
+                </svg>
+              </div>
+              <h3>Create something beautiful.</h3>
+              <p>Upload a photo to start designing your cover.</p>
+              <button class="btn btn-primary" id="emptyUploadBtn" type="button">
+                <svg class="icon"><use href="#i-upload"/></svg>
+                Upload Photo
+              </button>
+            </div>
+            <canvas id="previewCanvas" class="preview-canvas" width="1080" height="1350"></canvas>
+          </div>
+          <p class="stage-hint">
+            <svg class="icon"><use href="#i-move"/></svg>
+            Drag photo to reposition · drag text to move · Ctrl + wheel to zoom
+          </p>
+        </div>
+      </main>
+
+      <!-- RIGHT PANEL / MOBILE BOTTOM SHEET (same DOM, restyled by CSS) -->
+      <div class="sheet" id="bottomSheet">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <header class="sheet-head">
+          <h2 class="sheet-title" id="sheetTitle">Image</h2>
+          <button class="icon-btn" id="sheetClose" type="button" aria-label="Close panel"><svg class="icon"><use href="#i-x"/></svg></button>
+        </header>
+        <div class="sheet-body" id="sheetBody">
+          <!-- IMAGE / EDIT -->
+          <section class="panel panel-control" id="panel-edit" data-panel="edit">
+            <div class="panel-head">
+              <h2 class="panel-title"><svg class="icon"><use href="#i-camera"/></svg> Image</h2>
+              <button class="icon-btn" id="resetImgBtn" type="button" aria-label="Reset image position" title="Reset image position">
+                <svg class="icon"><use href="#i-refresh"/></svg>
+              </button>
+            </div>
+            <div class="control-group">
+              <label class="ctl-label" for="zoomRange">
+                <span>Zoom</span><output id="zoomVal">100%</output>
+              </label>
+              <div class="range-row">
+                <button class="icon-btn mini" id="zoomMinusBtn" type="button" aria-label="Zoom out" title="Zoom out"><svg class="icon"><use href="#i-minus"/></svg></button>
+                <input type="range" id="zoomRange" min="50" max="300" value="100" />
+                <button class="icon-btn mini" id="zoomPlusBtn" type="button" aria-label="Zoom in" title="Zoom in"><svg class="icon"><use href="#i-plus"/></svg></button>
+              </div>
+            </div>
+            <div class="control-group">
+              <label class="ctl-label" for="rotRange">
+                <span>Rotation</span><output id="rotVal">0°</output>
+              </label>
+              <div class="range-row">
+                <button class="icon-btn mini" id="rotMinusBtn" type="button" aria-label="Rotate left" title="Rotate left"><svg class="icon"><use href="#i-minus"/></svg></button>
+                <input type="range" id="rotRange" min="-45" max="45" value="0" />
+                <button class="icon-btn mini" id="rotPlusBtn" type="button" aria-label="Rotate right" title="Rotate right"><svg class="icon"><use href="#i-plus"/></svg></button>
+              </div>
+            </div>
+            <p class="panel-note">
+              <svg class="icon"><use href="#i-move"/></svg>
+              Tip: drag directly on the canvas to reposition your photo.
+            </p>
+            <button class="btn btn-ghost btn-sm btn-block" id="editUploadBtn" type="button">
+              <svg class="icon"><use href="#i-upload"/></svg>
+              Upload / Replace photo
+            </button>
+          </section>
+
+        <!-- TEXT -->
+        <section class="panel panel-control" id="panel-text" data-panel="text" hidden>
+          <div class="panel-head">
+            <h2 class="panel-title"><svg class="icon"><use href="#i-type"/></svg> Text</h2>
+            <div class="seg seg-sm" role="group" aria-label="Active text layer">
+              <button class="seg-btn is-active" type="button" data-textlayer="title" aria-pressed="true">Title</button>
+              <button class="seg-btn" type="button" data-textlayer="subtitle" aria-pressed="false">Subtitle</button>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label class="ctl-label" for="titleInput">Title</label>
+            <textarea id="titleInput" rows="2" placeholder="Your title here" aria-label="Title text"></textarea>
+          </div>
+          <div class="control-group">
+            <label class="ctl-label" for="subtitleInput">Subtitle</label>
+            <textarea id="subtitleInput" rows="2" placeholder="Add a subtitle" aria-label="Subtitle text"></textarea>
+          </div>
+
+          <div class="control-group">
+            <label class="ctl-label" for="fontSelect">Font family</label>
+            <select id="fontSelect">
+              <option value="Inter">Inter</option>
+              <option value="Poppins">Poppins</option>
+              <option value="Montserrat">Montserrat</option>
+              <option value="Playfair Display">Playfair Display</option>
+              <option value="Bebas Neue">Bebas Neue</option>
+              <option value="DM Sans">DM Sans</option>
+              <option value="Space Grotesk">Space Grotesk</option>
+            </select>
+          </div>
+
+          <div class="control-group ctl-2col">
+            <div>
+              <label class="ctl-label" for="sizeRange">Size</label>
+              <input type="range" id="sizeRange" min="24" max="260" value="96" />
+              <output id="sizeVal" class="ctl-output">96</output>
+            </div>
+            <div>
+              <label class="ctl-label" for="weightSelect">Weight</label>
+              <select id="weightSelect">
+                <option value="400">Regular</option>
+                <option value="500">Medium</option>
+                <option value="600">Semibold</option>
+                <option value="700">Bold</option>
+                <option value="800">Extra bold</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label class="ctl-label" for="lsRange">
+              <span>Letter spacing</span><output id="lsVal">0</output>
+            </label>
+            <input type="range" id="lsRange" min="0" max="60" value="0" />
+          </div>
+          <div class="control-group">
+            <label class="ctl-label" for="lhRange">
+              <span>Line height</span><output id="lhVal">1.1</output>
+            </label>
+            <input type="range" id="lhRange" min="0.8" max="2" step="0.05" value="1.1" />
+          </div>
+
+          <div class="control-group">
+            <label class="ctl-label" for="caseSelect">Case</label>
+            <select id="caseSelect">
+              <option value="none">As typed</option>
+              <option value="uppercase">UPPERCASE</option>
+              <option value="lowercase">lowercase</option>
+              <option value="capitalize">Capitalize</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label class="ctl-label">Align</label>
+            <div class="seg" data-align-container role="group" aria-label="Text alignment">
+              <button class="seg-btn" type="button" data-align="left" aria-label="Align left"><svg class="icon"><use href="#i-align-left"/></svg></button>
+              <button class="seg-btn" type="button" data-align="center" aria-label="Align center"><svg class="icon"><use href="#i-align-center"/></svg></button>
+              <button class="seg-btn" type="button" data-align="right" aria-label="Align right"><svg class="icon"><use href="#i-align-right"/></svg></button>
+            </div>
+          </div>
+
+          <div class="control-group ctl-2col">
+            <div>
+              <label class="ctl-label" for="colorInput">Color</label>
+              <div class="color-row">
+                <input type="color" id="colorInput" value="#ffffff" aria-label="Text color" />
+                <button class="icon-btn mini" id="colorResetBtn" type="button" aria-label="Reset text color" title="Reset text color"><svg class="icon"><use href="#i-reset"/></svg></button>
+              </div>
+            </div>
+            <div>
+              <label class="ctl-label" for="opacityRange">
+                <span>Opacity</span><output id="opacityVal">100%</output>
+              </label>
+              <input type="range" id="opacityRange" min="0" max="100" value="100" />
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label class="ctl-label">Position</label>
+            <div class="pos-grid" role="group" aria-label="Text position preset">
+              <button class="pos-btn" type="button" data-pos="top-left" aria-label="Top left"><span></span></button>
+              <button class="pos-btn" type="button" data-pos="top-center" aria-label="Top center"><span></span></button>
+              <button class="pos-btn" type="button" data-pos="top-right" aria-label="Top right"><span></span></button>
+              <button class="pos-btn" type="button" data-pos="center" aria-label="Center"><span></span></button>
+              <button class="pos-btn" type="button" data-pos="bottom-left" aria-label="Bottom left"><span></span></button>
+              <button class="pos-btn" type="button" data-pos="bottom-center" aria-label="Bottom center"><span></span></button>
+              <button class="pos-btn" type="button" data-pos="bottom-right" aria-label="Bottom right"><span></span></button>
+            </div>
+          </div>
+
+          <div class="control-group ideas">
+            <label class="ctl-label" for="ideasInput">
+              <span class="ideas-label"><svg class="icon"><use href="#i-sparkles"/></svg> Smart Title Ideas</span>
+            </label>
+            <div class="ideas-row">
+              <input type="text" id="ideasInput" placeholder="e.g. jalan pulang sore hari" aria-label="Theme for title ideas" />
+              <button class="btn btn-ghost btn-sm" id="ideasBtn" type="button">Generate</button>
+            </div>
+            <ul class="ideas-list" id="ideasList" aria-live="polite"></ul>
+            <p class="ideas-note">Generated locally from a simple dictionary — no AI, no internet.</p>
+          </div>
+        </section>
+
+        <!-- ADJUST -->
+        <section class="panel panel-control" id="panel-adjust" data-panel="adjust" hidden>
+          <div class="panel-head">
+            <h2 class="panel-title"><svg class="icon"><use href="#i-sliders"/></svg> Adjust</h2>
+          </div>
+
+          <div class="control-group">
+            <label class="ctl-label">Overlay</label>
+            <div class="seg" role="group" aria-label="Overlay type">
+              <button class="seg-btn is-active" type="button" data-ovtype="dark">Dark</button>
+              <button class="seg-btn" type="button" data-ovtype="light">Light</button>
+              <button class="seg-btn" type="button" data-ovtype="gradient">Gradient</button>
+              <button class="seg-btn" type="button" data-ovtype="none">None</button>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="ctl-label" for="ovRange">
+              <span>Overlay opacity</span><output id="ovVal">35%</output>
+            </label>
+            <input type="range" id="ovRange" min="0" max="100" value="35" />
+          </div>
+          <div class="control-group">
+            <label class="ctl-label" for="vigRange">
+              <span>Vignette intensity</span><output id="vigVal">0%</output>
+            </label>
+            <input type="range" id="vigRange" min="0" max="100" value="0" />
+          </div>
+          <div class="control-group">
+            <label class="ctl-label" for="blurRange">
+              <span>Blur intensity</span><output id="blurVal">0px</output>
+            </label>
+            <input type="range" id="blurRange" min="0" max="24" value="0" />
+          </div>
+
+          <div class="control-group">
+            <label class="ctl-label">Decorative</label>
+            <div class="toggle-row">
+              <button class="toggle" id="doodleToggle" type="button" role="switch" aria-checked="false" aria-label="Toggle doodle decorations">
+                <span class="toggle-knob"></span><span class="toggle-label">Doodles</span>
+              </button>
+              <button class="toggle" id="filmToggle" type="button" role="switch" aria-checked="false" aria-label="Toggle film frame">
+                <span class="toggle-knob"></span><span class="toggle-label">Film frame</span>
+              </button>
+              <button class="toggle" id="grainToggle" type="button" role="switch" aria-checked="false" aria-label="Toggle film grain">
+                <span class="toggle-knob"></span><span class="toggle-label">Grain</span>
+              </button>
+            </div>
+          </div>
+        </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOBILE BOTTOM BAR -->
+    <nav class="mobile-bar" aria-label="Quick tools">
+      <button class="m-tool" type="button" data-mtool="templates">
+        <svg class="icon"><use href="#i-grid"/></svg><span>Templates</span>
+      </button>
+      <button class="m-tool" type="button" data-mtool="edit">
+        <svg class="icon"><use href="#i-move"/></svg><span>Image</span>
+      </button>
+      <button class="m-tool" type="button" data-mtool="text">
+        <svg class="icon"><use href="#i-type"/></svg><span>Text</span>
+      </button>
+      <button class="m-tool" type="button" data-mtool="adjust">
+        <svg class="icon"><use href="#i-sliders"/></svg><span>Adjust</span>
+      </button>
+      <button class="m-tool m-tool--accent" type="button" data-mtool="export">
+        <svg class="icon"><use href="#i-download"/></svg><span>Export</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ===================== MODALS ===================== -->
+  <div class="modal-backdrop" id="modal-export" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="exportTitle" tabindex="-1">
+      <header class="modal-head">
+        <h2 class="modal-title" id="exportTitle">Export your cover</h2>
+        <button class="icon-btn js-modal-close" type="button" aria-label="Close export dialog"><svg class="icon"><use href="#i-x"/></svg></button>
+      </header>
+      <div class="modal-body">
+        <div class="final-wrap">
+          <canvas id="finalPreview" width="540" height="675"></canvas>
+          <div class="final-info" id="expInfo"></div>
+        </div>
+        <div class="export-opts">
+          <div class="opt-row">
+            <span class="opt-label">Format</span>
+            <div class="seg" role="group" aria-label="Export format">
+              <button class="seg-btn is-active" type="button" data-format="png">PNG</button>
+              <button class="seg-btn" type="button" data-format="jpg">JPG</button>
+            </div>
+          </div>
+          <div class="opt-row">
+            <span class="opt-label">Quality</span>
+            <div class="seg" role="group" aria-label="Export quality">
+              <button class="seg-btn is-active" type="button" data-quality="standard">Standard</button>
+              <button class="seg-btn" type="button" data-quality="high">High</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" id="expDownloadBtn" type="button">
+          <svg class="icon"><use href="#i-download"/></svg>
+          <span>Download Cover</span>
+        </button>
+        <p class="export-note">
+          <svg class="icon"><use href="#i-lock"/></svg>
+          Rendered entirely in your browser. Only the final image leaves your device — as a download.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modal-shortcuts" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="shortcutsTitle" tabindex="-1">
+      <header class="modal-head">
+        <h2 class="modal-title" id="shortcutsTitle">Keyboard shortcuts</h2>
+        <button class="icon-btn js-modal-close" type="button" aria-label="Close shortcuts dialog"><svg class="icon"><use href="#i-x"/></svg></button>
+      </header>
+      <div class="modal-body">
+        <ul class="kbd-list">
+          <li><span>Undo</span><span class="kbd"><kbd>Ctrl</kbd><span>+</span><kbd>Z</kbd></span></li>
+          <li><span>Redo</span><span class="kbd"><kbd>Ctrl</kbd><span>+</span><kbd>Shift</kbd><span>+</span><kbd>Z</kbd></span></li>
+          <li><span>Export cover</span><span class="kbd"><kbd>Ctrl</kbd><span>+</span><kbd>S</kbd></span></li>
+          <li><span>Remove selected text</span><span class="kbd"><kbd>Del</kbd></span></li>
+          <li><span>Close dialog</span><span class="kbd"><kbd>Esc</kbd></span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modal-about" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="aboutTitle" tabindex="-1">
+      <header class="modal-head">
+        <h2 class="modal-title" id="aboutTitle">About Coverly</h2>
+        <button class="icon-btn js-modal-close" type="button" aria-label="Close about dialog"><svg class="icon"><use href="#i-x"/></svg></button>
+      </header>
+      <div class="modal-body about-body">
+        <span class="badge"><svg class="icon"><use href="#i-zap"/></svg> 100% FREE · BROWSER BASED</span>
+        <p class="about-text">
+          <strong>Coverly</strong> helps you design Instagram covers that get noticed — cinematic, clean
+          and professional — directly in your browser.
+        </p>
+        <p class="about-text">
+          Your photos never leave your device. No account, no API, no tracking. The entire app is
+          static files, so it runs anywhere — even fully offline.
+        </p>
+        <p class="about-note">Built with HTML5, CSS3, Vanilla JavaScript and the Canvas API.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+  <!-- Scripts (plain scripts in dependency order so it works via file:// and GitHub Pages) -->
+  <script src="js/storage.js"></script>
+  <script src="js/templates.js"></script>
+  <script src="js/canvas.js"></script>
+  <script src="js/editor.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/controls.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

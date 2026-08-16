@@ -1,0 +1,13 @@
+# Dependencies / build artifacts
+node_modules/
+*.log
+.DS_Store
+Thumbs.db
+
+# Local test / scratch files
+qa.js
+probe.js
+test-*.png
+dl/
+dl2/
+dl3/
