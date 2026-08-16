@@ -96,11 +96,19 @@
         <a href="#how">How it works</a>
       </nav>
       <div class="site-nav-actions">
+        <button class="icon-btn site-nav-toggle" id="navToggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="siteNavMobile">
+          <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
         <button class="icon-btn js-dark-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
           <svg class="icon icon-sun"><use href="#i-sun"/></svg>
           <svg class="icon icon-moon"><use href="#i-moon"/></svg>
         </button>
         <button class="btn btn-primary js-open-editor" type="button">Create Cover</button>
+      </div>
+      <div class="site-nav-mobile" id="siteNavMobile" hidden>
+        <a href="#features">Features</a>
+        <a href="#templates">Templates</a>
+        <a href="#how">How it works</a>
       </div>
     </header>
 

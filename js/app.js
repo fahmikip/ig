@@ -86,6 +86,27 @@
     });
   }
 
+  function bindNav() {
+    const toggle = document.getElementById('navToggle');
+    const menu = document.getElementById('siteNavMobile');
+    if (!toggle || !menu) return;
+    function setOpen(open) {
+      menu.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+    }
+    toggle.addEventListener('click', function (e) {
+      e.stopPropagation();
+      setOpen(menu.hidden);
+    });
+    menu.addEventListener('click', function (e) {
+      if (e.target.closest('a')) setOpen(false);
+    });
+    document.addEventListener('click', function (e) {
+      if (!menu.hidden && !e.target.closest('.site-nav')) setOpen(false);
+    });
+  }
+
   function bindSamples() {
     document.querySelectorAll('.js-apply-sample').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -120,6 +141,7 @@
     if (global.Coverly.Controls) global.Coverly.Controls.init();
     bindViews();
     bindSamples();
+    bindNav();
     registerSW();
 
     /* Re-render once web fonts finish loading so typography is accurate */

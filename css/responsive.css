@@ -18,6 +18,7 @@
 
   .site-nav { padding: 12px 16px; }
   .site-nav-links { display: none; }
+  .site-nav-toggle { display: inline-flex; }
 
   /* editor goes mobile: rail hidden, panels move to sheet, bottom bar visible */
   .editor-body { flex-direction: column; }
